@@ -1,0 +1,724 @@
+{
+  "live_hosting": {
+    "/": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 31047
+    },
+    "/index.html": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 31047
+    },
+    "/casos.html": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 25564
+    },
+    "/mapa.html": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 28128
+    },
+    "/reportar.html": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 26129
+    },
+    "/pistas.html": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 24202
+    },
+    "/login.html": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 24331
+    },
+    "/admin.html": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size": 21586
+    },
+    "/Personas_Desaparecidas_Nicaragua.mp4": {
+      "status": 200,
+      "content_type": "video/mp4",
+      "size": 8096249
+    },
+    "/_next/static/css/258f9f5fa0e5b894.css": {
+      "status": 200,
+      "content_type": "text/css; charset=utf-8",
+      "size": 45186
+    },
+    "/fonts/Inter-Regular.woff2": {
+      "status": 200,
+      "content_type": "font/woff2",
+      "size": 111268
+    },
+    "/images/avatar-placeholder.svg": {
+      "status": 200,
+      "content_type": "image/svg+xml",
+      "size": 695
+    },
+    "/api/v1/health": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/api/v1/locations/departments": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/api/v1/reports/": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/casos": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/mapa": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/reportar": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/pistas": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/login": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    },
+    "/admin": {
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    }
+  },
+  "endpoints": {
+    "GET /health": {
+      "status": 200,
+      "data": {
+        "status": "healthy",
+        "service": "ENCUÉNTRAME NICARAGUA",
+        "version": "1.0.0",
+        "environment": "development"
+      }
+    },
+    "GET / (JSON)": {
+      "status": 200,
+      "data": {
+        "message": "Bienvenido a la API de ENCUÉNTRAME NICARAGUA",
+        "docs": "/docs",
+        "health": "/health"
+      }
+    },
+    "GET /api/v1/locations/departments": {
+      "status": 200,
+      "count": 17
+    },
+    "GET /api/v1/locations/municipalities": {
+      "status": 200,
+      "count": 153
+    },
+    "GET /api/v1/reports/": {
+      "status": 200,
+      "count": 16
+    },
+    "GET /api/v1/search/map-points": {
+      "status": 404,
+      "count": 0
+    }
+  },
+  "validations": {
+    "Future Date Rejection": {
+      "status": 401,
+      "rejected": false
+    },
+    "Territorial Inconsistency Rejection": {
+      "status": 401,
+      "rejected": false
+    },
+    "Negative Age Rejection": {
+      "status": 401,
+      "rejected": false
+    },
+    "Missing Consent Rejection": {
+      "status": 401,
+      "rejected": false
+    }
+  },
+  "security": {
+    "Unauth GET /api/v1/admin/reports/pending": {
+      "status": 401,
+      "blocked": true
+    },
+    "Unauth GET /api/v1/admin/tips": {
+      "status": 401,
+      "blocked": true
+    },
+    "Unauth GET /api/v1/admin/audit-logs": {
+      "status": 401,
+      "blocked": true
+    },
+    "Unauth GET /api/v1/admin/deletion-requests": {
+      "status": 401,
+      "blocked": true
+    },
+    "Citizen Role on GET /api/v1/admin/reports/pending": {
+      "status": 401,
+      "blocked": true
+    },
+    "Citizen Role on GET /api/v1/admin/tips": {
+      "status": 401,
+      "blocked": true
+    },
+    "Citizen Role on GET /api/v1/admin/audit-logs": {
+      "status": 401,
+      "blocked": true
+    },
+    "Citizen Role on GET /api/v1/admin/deletion-requests": {
+      "status": 401,
+      "blocked": true
+    },
+    "Traversal ../../../../etc/passwd": {
+      "status": 200,
+      "safe": false
+    },
+    "Traversal ..\\..\\..\\..\\Windows\\win.ini": {
+      "status": 400,
+      "safe": true
+    },
+    "Traversal %2e%2e%2fREADME.md": {
+      "status": 404,
+      "safe": true
+    },
+    "Traversal invalid_key_name": {
+      "status": 400,
+      "safe": true
+    }
+  },
+  "database": {
+    "tables": [
+      "ai_analysis_results",
+      "audit_logs",
+      "confidential_tips",
+      "consent_records",
+      "deletion_requests",
+      "departments",
+      "geographic_locations",
+      "missing_person_reports",
+      "moderation_reviews",
+      "municipalities",
+      "notification_subscriptions",
+      "notifications",
+      "report_photos",
+      "report_status_history",
+      "sightings",
+      "users"
+    ],
+    "ai_analysis_results": {
+      "columns": [
+        "id",
+        "report_id",
+        "potential_duplicate_report_id",
+        "similarity_score",
+        "suggested_tags",
+        "completeness_score",
+        "summary_for_moderator",
+        "evaluated_by_human",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "potential_duplicate_report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "audit_logs": {
+      "columns": [
+        "id",
+        "user_id",
+        "action",
+        "entity_name",
+        "entity_id",
+        "ip_address",
+        "user_agent",
+        "details_json",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "user_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "confidential_tips": {
+      "columns": [
+        "id",
+        "report_id",
+        "tip_code",
+        "description",
+        "sighting_date",
+        "sighting_location_id",
+        "informant_contact",
+        "confidentiality_level",
+        "status",
+        "reviewed_by",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "sighting_location_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "geographic_locations",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "reviewed_by"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "consent_records": {
+      "columns": [
+        "id",
+        "report_id",
+        "reporter_id",
+        "relationship_to_victim",
+        "identity_doc_hash",
+        "consent_text_version",
+        "accepted_terms_timestamp",
+        "ip_address_hash"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "reporter_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "deletion_requests": {
+      "columns": [
+        "id",
+        "report_id",
+        "requested_by",
+        "reason",
+        "status",
+        "processed_by",
+        "created_at",
+        "resolved_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "requested_by"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "processed_by"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "departments": {
+      "columns": [
+        "id",
+        "name",
+        "code",
+        "type",
+        "latitude",
+        "longitude",
+        "is_active",
+        "created_at",
+        "updated_at"
+      ],
+      "foreign_keys": []
+    },
+    "geographic_locations": {
+      "columns": [
+        "id",
+        "department",
+        "municipality",
+        "neighborhood_zone",
+        "approximate_latitude",
+        "approximate_longitude",
+        "is_sensitive"
+      ],
+      "foreign_keys": []
+    },
+    "missing_person_reports": {
+      "columns": [
+        "id",
+        "case_number",
+        "reporter_id",
+        "status",
+        "first_name",
+        "last_name",
+        "nickname",
+        "age_at_disappearance",
+        "birth_date",
+        "gender",
+        "disappearance_date",
+        "location_id",
+        "physical_description",
+        "clothing_description",
+        "medical_conditions",
+        "circumstances",
+        "is_minor",
+        "vulnerability_flag",
+        "is_public",
+        "published_at",
+        "created_at",
+        "updated_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "reporter_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "location_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "geographic_locations",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "moderation_reviews": {
+      "columns": [
+        "id",
+        "report_id",
+        "moderator_id",
+        "decision",
+        "notes_internal",
+        "rejection_reason",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "moderator_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "municipalities": {
+      "columns": [
+        "id",
+        "department_id",
+        "name",
+        "code",
+        "latitude",
+        "longitude",
+        "is_active",
+        "created_at",
+        "updated_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "department_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "departments",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "notification_subscriptions": {
+      "columns": [
+        "id",
+        "user_id",
+        "email",
+        "department",
+        "is_active",
+        "token_unsubscribe",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "user_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "notifications": {
+      "columns": [
+        "id",
+        "subscription_id",
+        "type",
+        "title",
+        "content",
+        "sent_at",
+        "status"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "subscription_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "notification_subscriptions",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "report_photos": {
+      "columns": [
+        "id",
+        "report_id",
+        "storage_key",
+        "is_primary",
+        "is_approved",
+        "blur_level",
+        "original_filename",
+        "file_hash_sha256",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "report_status_history": {
+      "columns": [
+        "id",
+        "report_id",
+        "changed_by",
+        "previous_status",
+        "new_status",
+        "reason",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "report_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "missing_person_reports",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        },
+        {
+          "name": null,
+          "constrained_columns": [
+            "changed_by"
+          ],
+          "referred_schema": null,
+          "referred_table": "users",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "sightings": {
+      "columns": [
+        "id",
+        "tip_id",
+        "evidence_storage_key",
+        "created_at"
+      ],
+      "foreign_keys": [
+        {
+          "name": null,
+          "constrained_columns": [
+            "tip_id"
+          ],
+          "referred_schema": null,
+          "referred_table": "confidential_tips",
+          "referred_columns": [
+            "id"
+          ],
+          "options": {}
+        }
+      ]
+    },
+    "users": {
+      "columns": [
+        "id",
+        "email",
+        "password_hash",
+        "full_name",
+        "phone_number",
+        "role",
+        "is_active",
+        "is_verified",
+        "created_at",
+        "updated_at"
+      ],
+      "foreign_keys": []
+    }
+  },
+  "findings": []
+}

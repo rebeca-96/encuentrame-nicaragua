@@ -1,0 +1,182 @@
+[
+  {
+    "id": "TC-AUTH-01",
+    "module": "Autenticación",
+    "title": "Login exitoso de Administrador con credenciales válidas",
+    "status": "PASS",
+    "expected": "HTTP 200 con token JWT",
+    "actual": "HTTP 200",
+    "evidence": "{'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0M2MwYTllYS1hMTA4LTQ2ZDEtOTI0Ni1mOTViN2JhZjM3MGIiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjE3OTUxNDU5MTQsImlhdCI6MTc5NTEzODcxNH0.RBLOV2qQB-bF_Av15F1OMfCbdMKCaLE-AJNWuC4cIxI', 'token_type': 'bearer', 'role': 'admin', 'user_id': '43c0a9ea-a108-46d1-9246-f95b7baf370b', 'full_name': 'Lic. Sofía Montenegro'}",
+    "severity": null
+  },
+  {
+    "id": "TC-AUTH-02",
+    "module": "Autenticación",
+    "title": "Rechazo de credenciales incorrectas",
+    "status": "PASS",
+    "expected": "HTTP 400/401",
+    "actual": "HTTP 401",
+    "evidence": "{'detail': 'Credenciales incorrectas o usuario no registrado'}",
+    "severity": null
+  },
+  {
+    "id": "TC-AUTH-03",
+    "module": "Autenticación",
+    "title": "Revocación de JWT en cierre de sesión (Logout Blacklist)",
+    "status": "PASS",
+    "expected": "HTTP 401 con token revocado",
+    "actual": "HTTP 401",
+    "evidence": "{'detail': 'Token inválido o expirado'}",
+    "severity": null
+  },
+  {
+    "id": "TC-AUTH-04",
+    "module": "Seguridad / Rate Limiting",
+    "title": "Protección contra fuerza bruta en login (HTTP 429)",
+    "status": "PASS",
+    "expected": "HTTP 429 Too Many Requests",
+    "actual": "HTTP 429 detectado",
+    "evidence": "Rate limit activo",
+    "severity": null
+  },
+  {
+    "id": "TC-RBAC-01",
+    "module": "Autorización",
+    "title": "Usuario con rol 'reporter' no puede acceder a reportes pendientes de moderación",
+    "status": "PASS",
+    "expected": "HTTP 401/403 Prohibido",
+    "actual": "HTTP 403",
+    "evidence": "{\"detail\":\"Se requieren permisos de moderación o administración para esta acción\"}",
+    "severity": null
+  },
+  {
+    "id": "TC-REP-01",
+    "module": "Reportes",
+    "title": "Creación correcta en estado pending_review y oculto al público",
+    "status": "PASS",
+    "expected": "HTTP 201, pending_review, is_public=False",
+    "actual": "HTTP 201, status=pending_review",
+    "evidence": "{'id': '924afbce-66c4-41a5-bfa6-ecf82dabe8d0', 'case_number': 'EN-2026-0021', 'status': 'pending_review', 'message': 'Reporte registrado exitosamente. Ha ingresado a revisión previa de moderación por seguridad.'}",
+    "severity": null
+  },
+  {
+    "id": "TC-REP-02",
+    "module": "Validaciones de Reportes",
+    "title": "Rechazo estricto de fecha de desaparición futura",
+    "status": "PASS",
+    "expected": "HTTP 400/422",
+    "actual": "HTTP 422",
+    "evidence": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"disappearance_date\"],\"msg\":\"Value error, La fecha de desaparición no puede ser una fecha en el futuro.\",\"input\":\"2026-11-30T01:38:34.693665+00:00\",\"ctx\":{\"error\":{}}}]}",
+    "severity": null
+  },
+  {
+    "id": "TC-REP-03",
+    "module": "Validaciones Territoriales",
+    "title": "Rechazo de municipio que no pertenece al departamento",
+    "status": "PASS",
+    "expected": "HTTP 400/422",
+    "actual": "HTTP 422",
+    "evidence": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\"],\"msg\":\"Value error, El municipio 'León' no pertenece al departamento de 'Managua'.\",\"input\":{\"first_name\":\"Carlos\",\"last_name\":\"García QA\",\"gender\":\"male\",\"age_at_disappearance\":28,\"disappearance_date\":\"2026-11-18T01:38:34.657825+00:00\",\"department\":\"Managua\",\"municipality\":\"León\",\"physical_description\":\"Altura 1.75m, tez morena clara, cicatriz en ceja derecha.\",\"clothing_description\":\"Camisa azul oscuro, pantalón negro jeans.\",\"circumstances\":\"Visto por última vez saliendo de su trabajo hacia su domicilio.\",\"consent\":{\"relationship_to_victim\":\"Madre\",\"identity_doc_number\":\"001-010190-0000A\",\"accepted_terms\":true}},\"ctx\":{\"error\":{}}}]}",
+    "severity": null
+  },
+  {
+    "id": "TC-REP-04",
+    "module": "Privacidad / Ley 787",
+    "title": "Rechazo de reporte sin consentimiento legal expreso",
+    "status": "PASS",
+    "expected": "HTTP 400/422",
+    "actual": "HTTP 422",
+    "evidence": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"consent\",\"accepted_terms\"],\"msg\":\"Value error, Debe aceptar expresamente los términos de consentimiento informado y la Ley 787\",\"input\":false,\"ctx\":{\"error\":{}}}]}",
+    "severity": null
+  },
+  {
+    "id": "TC-REP-05",
+    "module": "Seguridad / Carga de Archivos",
+    "title": "Bloqueo de archivos ejecutables/scripts en carga de fotos",
+    "status": "PASS",
+    "expected": "HTTP 400/415",
+    "actual": "HTTP 400",
+    "evidence": "{\"detail\":\"Tipo de archivo no permitido (application/x-php). Solo se permiten: image/jpeg, image/png, image/webp\"}",
+    "severity": null
+  },
+  {
+    "id": "TC-GEO-01",
+    "module": "Geografía y Mapas",
+    "title": "Presencia exacta de 17 entidades territoriales (15 deptos + 2 regiones)",
+    "status": "PASS",
+    "expected": "17 entidades",
+    "actual": "17 entidades",
+    "evidence": "[{'name': 'Boaco', 'code': 'BOA', 'type': 'department', 'latitude': 12.4722, 'longitude': -85.6586, 'id': 'ea5d2957-f92a-4cf7-bb61-f1ac646effbb', 'is_active': True, 'created_at': '2026-11-19T02:42:15.310056', 'updated_at': '2026-11-19T02:42:15.310056', 'municipalities_count': 6}, {'name': 'Carazo', 'code': 'CAR', 'type': 'department', 'latitude': 11.8541, 'longitude': -86.1994, 'id': 'b5435f93-1f38-466e-8cb8-e098c21a63cc', 'is_active': True, 'created_at': '2026-11-19T02:42:15.310056', 'updated_at': '2026-11-19T02:42:15.310056', 'municipalities_count': 8}, {'name': 'Chinandega', 'code': 'CHI', 'type': 'department', 'latitude': 12.6294, 'longitude': -87.1311, 'id': '8a5bfec1-6eb3-4f21-a3f6-daf6e1a0f1bd', 'is_active': True, 'created_at': '2026-11-19T02:42:15.310056', 'updated_at': '2026-11-19T02:42:15.310056', 'municipalities_count': 13}, {'name': 'Chontales', 'code': 'CHO', 'type': 'department', 'latitude': 12.062, 'longitude': -85.3644, 'id': 'd4e03bd6-38e1-4ee7-948b-3ec1428fda20', 'is_active': True, 'created_at': '2026-11-19T02:42:15.325823', 'updated_at': '2026-11-19T02:42:15.325823', 'municipalities_count': 10}, {'name': 'Estelí', 'code': 'EST', 'type': 'department', 'latitude': 13.0919, 'longitude': -86.3538, 'id': '13fb8aec-2b45-4667-a2c1-004a23d96b45', 'is_active': True, 'created_at': '2026-11-19T02:42:15.325823', 'updated_at': '2026-11-19T02:42:15.325823', 'municipalities_count': 6}, {'name': 'Granada', 'code': 'GRA', 'type': 'department', 'latitude': 11.9299, 'longitude': -85.956, 'id': '9c49cc65-9d69-4325-bdaf-43a939b378c5', 'is_active': True, 'created_at': '2026-11-19T02:42:15.325823', 'updated_at': '2026-11-19T02:42:15.325823', 'municipalities_count': 4}, {'name': 'Jinotega', 'code': 'JIN', 'type': 'department', 'latitude': 13.0991, 'longitude': -85.9992, 'id': '2680bfae-4088-499f-a21e-64dc09a2ae18', 'is_active': True, 'created_at': '2026-11-19T02:42:15.341498', 'updated_at': '2026-11-19T02:42:15.341498', 'municipalities_count': 8}, {'name': 'León', 'code': 'LEO', 'type': 'department', 'latitude': 12.4379, 'longitude': -86.878, 'id': 'ce5ae2be-1a1f-4188-ae8b-f2c1e32f1c88', 'is_active': True, 'created_at': '2026-11-19T02:42:15.341498', 'updated_at': '2026-11-19T02:42:15.341498', 'municipalities_count': 10}, {'name': 'Madriz', 'code': 'MAD', 'type': 'department', 'latitude': 13.4862, 'longitude': -86.5822, 'id': '9e37d9bf-4ed8-41cf-80df-e0989c9ec663', 'is_active': True, 'created_at': '2026-11-19T02:42:15.341498', 'updated_at': '2026-11-19T02:42:15.341498', 'municipalities_count': 9}, {'name': 'Managua', 'code': 'MGA', 'type': 'department', 'latitude': 12.1364, 'longitude': -86.2514, 'id': 'bf09481d-b0ef-48ad-8009-a96882bb672a', 'is_active': True, 'created_at': '2026-11-19T02:42:15.353509', 'updated_at': '2026-11-19T02:42:15.353509', 'municipalities_count': 9}, {'name': 'Masaya', 'code': 'MAS', 'type': 'department', 'latitude': 11.9744, 'longitude': -86.0942, 'id': '014df628-a8fc-4b70-b49d-e84e002c681e', 'is_active': True, 'created_at': '2026-11-19T02:42:15.358071', 'updated_at': '2026-11-19T02:42:15.358071', 'municipalities_count': 9}, {'name': 'Matagalpa', 'code': 'MAT', 'type': 'department', 'latitude': 12.9256, 'longitude': -85.9178, 'id': '2c1845c8-dcfe-4eed-94fc-5170f5eb7c4f', 'is_active': True, 'created_at': '2026-11-19T02:42:15.358071', 'updated_at': '2026-11-19T02:42:15.358071', 'municipalities_count': 13}, {'name': 'Nueva Segovia', 'code': 'NSE', 'type': 'department', 'latitude': 13.6322, 'longitude': -86.4756, 'id': '7c2e0583-b174-4946-8895-66a3a9be49c4', 'is_active': True, 'created_at': '2026-11-19T02:42:15.358071', 'updated_at': '2026-11-19T02:42:15.358071', 'municipalities_count': 12}, {'name': 'Región Autónoma de la Costa Caribe Norte', 'code': 'CCN', 'type': 'autonomous_region', 'latitude': 14.0351, 'longitude': -83.3888, 'id': '0c3ca636-4ae5-41c3-bac2-da8a535fb8cb', 'is_active': True, 'created_at': '2026-11-19T02:42:15.373579', 'updated_at': '2026-11-19T02:42:15.373579', 'municipalities_count': 8}, {'name': 'Región Autónoma de la Costa Caribe Sur', 'code': 'CCS', 'type': 'autonomous_region', 'latitude': 12.0131, 'longitude': -83.7635, 'id': '42a25dba-fc9f-4ac3-874c-d29a5b770f62', 'is_active': True, 'created_at': '2026-11-19T02:42:15.373579', 'updated_at': '2026-11-19T02:42:15.373579', 'municipalities_count': 12}, {'name': 'Rivas', 'code': 'RIV', 'type': 'department', 'latitude': 11.4372, 'longitude': -85.8263, 'id': '2d0654c4-bdb4-44be-b14c-79800efd6430', 'is_active': True, 'created_at': '2026-11-19T02:42:15.373579', 'updated_at': '2026-11-19T02:42:15.373579', 'municipalities_count': 10}, {'name': 'Río San Juan', 'code': 'RSJ', 'type': 'department', 'latitude': 11.13, 'longitude': -84.7789, 'id': '9e476b32-f685-4ec2-9fe5-ddca57bbb9de', 'is_active': True, 'created_at': '2026-11-19T02:42:15.373579', 'updated_at': '2026-11-19T02:42:15.373579', 'municipalities_count': 6}]",
+    "severity": null
+  },
+  {
+    "id": "TC-GEO-02",
+    "module": "Geografía y Mapas",
+    "title": "Presencia exacta de 153 municipios oficiales",
+    "status": "PASS",
+    "expected": "153 municipios",
+    "actual": "153 municipios",
+    "evidence": "Total: 153",
+    "severity": null
+  },
+  {
+    "id": "TC-GEO-03",
+    "module": "Privacidad / Mapas",
+    "title": "Mapa utiliza coordenadas aproximadas agregadas sin filtrar domicilios",
+    "status": "PASS",
+    "expected": "Coordenadas aproximadas sin domicilios",
+    "actual": "Sin fuga de datos privados",
+    "evidence": "16 puntos",
+    "severity": null
+  },
+  {
+    "id": "TC-TIP-01",
+    "module": "Pistas Confidenciales",
+    "title": "Recepción segura de pista y generación de código de seguimiento anónimo",
+    "status": "PASS",
+    "expected": "HTTP 201 con código no predecible",
+    "actual": "HTTP 201, code=PISTA-0D74-F22D",
+    "evidence": "{'tip_code': 'PISTA-0D74-F22D', 'message': 'Su pista ha sido recibida de manera confidencial y protegida. Guarde su código para consultar el estado.', 'status': 'received', 'created_at': '2026-11-20T01:38:34.801146'}",
+    "severity": null
+  },
+  {
+    "id": "TC-TIP-02",
+    "module": "Pistas Confidenciales",
+    "title": "Consulta ciudadana de estado mediante código anónimo",
+    "status": "PASS",
+    "expected": "HTTP 200 con estado de pista",
+    "actual": "HTTP 200",
+    "evidence": "{'tip_code': 'PISTA-0D74-F22D', 'status': 'received', 'created_at': '2026-11-20T01:38:34.801146', 'message': 'Su pista ha sido registrada y está en cola de evaluación por el equipo de moderación.'}",
+    "severity": null
+  },
+  {
+    "id": "TC-LEY787-01",
+    "module": "Privacidad / Ley 787",
+    "title": "Solicitud de cancelación/supresión de expediente por el titular",
+    "status": "PASS",
+    "expected": "HTTP 201 Solicitud creada",
+    "actual": "HTTP 201",
+    "evidence": "{'id': '0376474a-783a-474b-a9d1-516825f727c8', 'report_id': '924afbce-66c4-41a5-bfa6-ecf82dabe8d0', 'case_number': 'EN-2026-0021', 'reason': 'Persona localizada por cuenta propia, solicitud de baja.', 'status': 'pending', 'created_at': '2026-11-20T01:38:34.833201', 'message': 'Solicitud de supresión de datos recibida y en cola de procesamiento conforme a la Ley N.° 787.'}",
+    "severity": null
+  },
+  {
+    "id": "TC-ENV-01",
+    "module": "Integración / Hosting",
+    "title": "Rutas limpias de Next.js devuelven 404 en hosting estático si no se agrega .html (Falta rewrite rule)",
+    "status": "FAIL",
+    "expected": "HTTP 200 en /casos",
+    "actual": "/casos devolvió 404, mientras /casos.html devolvió 200",
+    "evidence": "{'clean_url_status': 404, 'html_status': 200}",
+    "severity": "P2"
+  },
+  {
+    "id": "TC-ENV-02",
+    "module": "Integración / Hosting",
+    "title": "API de Backend no está conectada o proxied en https://creacionvaloria.tradescanner.online/api/v1/ (Devuelve 404)",
+    "status": "FAIL",
+    "expected": "HTTP 200 en /api/v1/health",
+    "actual": "/api/v1/health devolvió 404 (El hosting solo sirve el frontend estático)",
+    "evidence": "{'api_health_status': 404}",
+    "severity": "P1"
+  }
+]

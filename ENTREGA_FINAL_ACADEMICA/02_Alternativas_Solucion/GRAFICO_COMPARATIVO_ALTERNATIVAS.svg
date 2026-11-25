@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 620" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <style>
+      .title { font-size: 20px; font-weight: 800; fill: #0f2a4a; }
+      .subtitle { font-size: 13px; fill: #64748b; }
+      .axis-label { font-size: 11px; fill: #475569; font-weight: 600; text-anchor: end; }
+      .bar-label { font-size: 10px; font-weight: 700; fill: #ffffff; }
+      .legend-text { font-size: 12px; fill: #1e293b; font-weight: 600; }
+      .grid-line { stroke: #e2e8f0; stroke-dasharray: 4,4; stroke-width: 1; }
+      .axis-line { stroke: #94a3b8; stroke-width: 1.5; }
+      .score-box { font-size: 14px; font-weight: 800; }
+    </style>
+    <linearGradient id="gradAltA" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#94a3b8" />
+      <stop offset="100%" stop-color="#64748b" />
+    </linearGradient>
+    <linearGradient id="gradAltB" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="gradAltC" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#14b8a6" />
+      <stop offset="100%" stop-color="#0f766e" />
+    </linearGradient>
+  </defs>
+
+  <!-- Encabezado -->
+  <text x="40" y="40" class="title">EVALUACIÓN COMPARATIVA PONDERADA DE ALTERNATIVAS DE SOLUCIÓN</text>
+  <text x="40" y="62" class="subtitle">Proyecto: Encuéntrame Nicaragua — Escala de Puntuación Multicriterio (1.0 = Muy Desfavorable a 5.0 = Muy Favorable)</text>
+
+  <!-- Leyenda Superior -->
+  <g transform="translate(480, 28)">
+    <!-- Alt A -->
+    <rect x="0" y="0" width="16" height="16" rx="3" fill="#64748b" />
+    <text x="22" y="13" class="legend-text">Alt A: Redes Sociales (2.00 / 40.0%)</text>
+    
+    <!-- Alt B -->
+    <rect x="0" y="24" width="16" height="16" rx="3" fill="#0284c7" />
+    <text x="22" y="37" class="legend-text">Alt B: Portal Estático (2.80 / 56.0%)</text>
+    
+    <!-- Alt C -->
+    <rect x="250" y="24" width="16" height="16" rx="3" fill="#0f766e" />
+    <text x="272" y="37" class="legend-text">Alt C: Full Stack (4.60 / 92.0%) [SELECCIONADA]</text>
+  </g>
+
+  <!-- Ejes y Líneas de Cuadrícula (X: 300 a 880, ancho = 580 px; Escala 0 a 5 -> 116 px por unidad) -->
+  <!-- Líneas verticales de escala (1 a 5) -->
+  <line x1="300" y1="95" x2="300" y2="540" class="axis-line" />
+  <line x1="416" y1="95" x2="416" y2="540" class="grid-line" />
+  <line x1="532" y1="95" x2="532" y2="540" class="grid-line" />
+  <line x1="648" y1="95" x2="648" y2="540" class="grid-line" />
+  <line x1="764" y1="95" x2="764" y2="540" class="grid-line" />
+  <line x1="880" y1="95" x2="880" y2="540" class="axis-line" />
+
+  <!-- Marcas de escala inferior -->
+  <text x="300" y="560" font-size="11" fill="#64748b" text-anchor="middle">0.0</text>
+  <text x="416" y="560" font-size="11" fill="#64748b" text-anchor="middle">1.0</text>
+  <text x="532" y="560" font-size="11" fill="#64748b" text-anchor="middle">2.0</text>
+  <text x="648" y="560" font-size="11" fill="#64748b" text-anchor="middle">3.0</text>
+  <text x="764" y="560" font-size="11" fill="#64748b" text-anchor="middle">4.0</text>
+  <text x="880" y="560" font-size="11" fill="#0f2a4a" font-weight="bold" text-anchor="middle">5.0 (Máx)</text>
+
+  <!-- BARRAS AGRUPADAS POR CRITERIO -->
+  
+  <!-- C1: Seguridad y Datos (20%) -->
+  <g transform="translate(0, 105)">
+    <text x="285" y="24" class="axis-label">Seguridad y Privacidad (20%)</text>
+    <!-- Alt A (1.0 = 116px) -->
+    <rect x="300" y="2" width="116" height="8" rx="2" fill="url(#gradAltA)" />
+    <!-- Alt B (2.0 = 232px) -->
+    <rect x="300" y="13" width="232" height="8" rx="2" fill="url(#gradAltB)" />
+    <!-- Alt C (5.0 = 580px) -->
+    <rect x="300" y="24" width="580" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C2: Centralización (15%) -->
+  <g transform="translate(0, 145)">
+    <text x="285" y="24" class="axis-label">Centralización de Información (15%)</text>
+    <rect x="300" y="2" width="116" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="348" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="580" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C3: Moderación y Verificación (15%) -->
+  <g transform="translate(0, 185)">
+    <text x="285" y="24" class="axis-label">Moderación y Verificación (15%)</text>
+    <rect x="300" y="2" width="116" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="348" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="580" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C4: Seguimiento y Trazabilidad (10%) -->
+  <g transform="translate(0, 225)">
+    <text x="285" y="24" class="axis-label">Trazabilidad 'Carpetas Vivas' (10%)</text>
+    <rect x="300" y="2" width="116" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="232" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="580" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C5: Geolocalización (10%) -->
+  <g transform="translate(0, 265)">
+    <text x="285" y="24" class="axis-label">Geolocalización 153 Municipios (10%)</text>
+    <rect x="300" y="2" width="116" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="232" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="580" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C6: Accesibilidad y Facilidad (10%) -->
+  <g transform="translate(0, 305)">
+    <text x="285" y="24" class="axis-label">Accesibilidad Ciudadana (10%)</text>
+    <rect x="300" y="2" width="580" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="464" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="464" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C7: Escalabilidad (5%) -->
+  <g transform="translate(0, 345)">
+    <text x="285" y="24" class="axis-label">Escalabilidad Técnica (5%)</text>
+    <rect x="300" y="2" width="464" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="464" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="464" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C8: Costo Favorable (5%) -->
+  <g transform="translate(0, 385)">
+    <text x="285" y="24" class="axis-label">Costo Favorable (5%)</text>
+    <rect x="300" y="2" width="580" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="464" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="348" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C9: Facilidad Mantenimiento (5%) -->
+  <g transform="translate(0, 425)">
+    <text x="285" y="24" class="axis-label">Facilidad de Mantenimiento (5%)</text>
+    <rect x="300" y="2" width="348" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="232" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="464" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- C10: Tiempo Puesta en Marcha (5%) -->
+  <g transform="translate(0, 465)">
+    <text x="285" y="24" class="axis-label">Tiempo Rápido Puesta en Marcha (5%)</text>
+    <rect x="300" y="2" width="580" height="8" rx="2" fill="url(#gradAltA)" />
+    <rect x="300" y="13" width="464" height="8" rx="2" fill="url(#gradAltB)" />
+    <rect x="300" y="24" width="348" height="8" rx="2" fill="url(#gradAltC)" />
+  </g>
+
+  <!-- RESULTADO FINAL PONDERADO -->
+  <g transform="translate(0, 508)">
+    <rect x="40" y="0" width="870" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+    <text x="55" y="23" font-size="12" font-weight="bold" fill="#0f2a4a">PUNTUACIÓN GLOBAL:</text>
+    <text x="220" y="23" font-size="12" font-weight="bold" fill="#64748b">Alt A: 2.00 / 5.0 (40.0%)</text>
+    <text x="440" y="23" font-size="12" font-weight="bold" fill="#0284c7">Alt B: 2.80 / 5.0 (56.0%)</text>
+    <text x="660" y="23" font-size="13" font-weight="bold" fill="#0f766e">★ Alt C: 4.60 / 5.0 (92.0%) [GANADORA]</text>
+  </g>
+
+  <!-- Pie de página -->
+  <text x="40" y="595" font-size="10" fill="#94a3b8">Fuente: Matriz de Evaluación Ponderada Multicriterio — Proyecto Encuéntrame Nicaragua (2026). Basado en estándares Ley 787, CICR y OWASP ASVS v5.0.0.</text>
+</svg>

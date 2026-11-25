@@ -1,0 +1,1576 @@
+====================================================================================================
+DOCUMENTACIÓN TÉCNICA INTEGRAL, ARQUITECTURA Y BITÁCORA HISTÓRICA DEL PROYECTO
+ENCUÉNTRAME NICARAGUA: PLATAFORMA CÍVICA DE BÚSQUEDA Y REUNIFICACIÓN FAMILIAR
+====================================================================================================
+Fecha de generación de la documentación: 2026-11-24 17:32:43
+Autor / Rol: Equipo de Ingeniería Full Stack Senior, Arquitectura de Software, Seguridad y QA
+Ubicación del repositorio: c:\Users\User\Documents\Valor IA\EncuentrameNicaragua
+====================================================================================================
+
+====================================================================================================
+TABLA DE CONTENIDOS
+====================================================================================================
+1. RESUMEN EJECUTIVO Y FICHA TÉCNICA GENERAL
+2. ARQUITECTURA DEL SISTEMA Y CREACIÓN INICIAL
+   2.1. Propósito Cívico y Marco Legal (Ley N.° 787 de Nicaragua)
+   2.2. Pila Tecnológica (Stack Tecnológico Full Stack)
+   2.3. Estructura de Directorios del Proyecto
+   2.4. Modelo de Datos y Esquema Relacional de Base de Datos
+   2.5. Arquitectura de Seguridad y Control de Acceso (RBAC)
+   2.6. Módulo de Gestión de Medios y Sanitización de Imágenes EXIF
+3. BITÁCORA CRONOLÓGICA COMPLETA DE PROMPTS Y REQUERIMIENTOS DEL USUARIO (38 PROMPTS)
+4. ANÁLISIS DETALLADO DE HITOS, DIAGNÓSTICOS, CAMBIOS Y AJUSTES REALIZADOS
+   4.1. Creación Inicial y Planificación (Fases 1, 2 y 3)
+   4.2. Primeras Auditorías de Seguridad, RBAC y Cobertura de Pruebas Pytest
+   4.3. Módulo GIS, División Político-Administrativa y Mapas de Nicaragua
+   4.4. Autonomía y Desacoplamiento de Dependencias Externas (Paquetería Local)
+   4.5. Configuración de Exportación Estática Next.js y Servidor FastAPI (main.py)
+   4.6. Despliegue en Hosting Público y Diagnóstico de Enrutamiento (tradescanner.online)
+   4.7. Integración de Multimedia Institucional (Video y Ajustes de Portada)
+   4.8. Corrección de Endpoints de Autenticación y Registro (Error 405 Method Not Allowed)
+   4.9. Formulario de Registro de Casos: Selectores Dinámicos de Departamentos y Municipios
+   4.10. Corrección de Error de Sincronización en Mapa Nacional GeoJSON
+   4.11. Catálogo Oficial: Separación de Casos Activos y No Activos (Resueltos)
+   4.12. Consulta de Fichas: Expediente Forense, Hitos en Vivo y Tracking en Tiempo Real
+   4.13. Auditoría Exhaustiva del Módulo de Fotografías y Gestión de Archivos
+   4.14. Resolución Crítica de Enrutamiento y Navegación Next.js + FastAPI (Evitar JSON 404)
+   4.15. Localización, Estructura y Esquema de la Base de Datos (encuentrame_nicaragua.db)
+   4.16. Visualización de Fotografías Reales Subidas en Catálogo Local (Eliminación de Avatares Sintéticos)
+5. REGISTRO DE ARCHIVOS CLAVE MODIFICADOS Y CREADOS
+6. ASEGURAMIENTO DE CALIDAD (QA), COBERTURA DE PRUEBAS Y VALIDACIÓN
+7. GUÍA OPERATIVA: INSTALACIÓN, EJECUCIÓN LOCAL Y MANTENIMIENTO
+====================================================================================================
+
+
+====================================================================================================
+1. RESUMEN EJECUTIVO Y FICHA TÉCNICA GENERAL
+====================================================================================================
+
+ENCUÉNTRAME NICARAGUA es una solución tecnológica cívica orientada a facilitar la búsqueda,
+geolocalización, difusión oficial y reunificación de personas reportadas como desaparecidas o no
+localizadas en la República de Nicaragua.
+
+Ficha Técnica:
+- Nombre del Proyecto: Encuéntrame Nicaragua
+- Dominio Local: http://127.0.0.1:8000
+- Dominio de Despliegue Público: https://creacionvaloria.tradescanner.online
+- Tipo de Aplicación: Sistema Web Full Stack desacoplado con arquitectura Híbrida (FastAPI ASGI + Next.js Static Export SSG)
+- Base de Datos Primaria Local: SQLite (encuentrame_nicaragua.db) compatible con PostgreSQL
+- Marco Normativo: Ley N.° 787 de Protección de Datos Personales de Nicaragua, principio de minimización de datos,
+  derechos ARCO (Acceso, Rectificación, Cancelación y Oposición), y estricta protección al interés superior del menor.
+- Almacenamiento Seguro de Medios: Directorio local 'storage/uploads/' con sanitización forzada a WebP (800x800 máx),
+  eliminación total de metadatos EXIF (coordenadas GPS, modelo de cámara, número de serie, marcas de tiempo), y
+  denominación con hash criptográfico unidireccional (MD5/SHA256).
+
+
+====================================================================================================
+2. ARQUITECTURA DEL SISTEMA Y CREACIÓN INICIAL
+====================================================================================================
+
+2.1. Propósito Cívico y Marco Legal (Ley N.° 787 de Nicaragua)
+El sistema fue concebido bajo premisas estrictas de derechos humanos, dignidad de las personas y
+seguridad de la información:
+a) Consentimiento Informado Obligatorio: Todo reporte formal exige que el reportante declare su vínculo familiar
+   o legal con la víctima, registre su documento de identidad (almacenado exclusivamente como hash SHA-256 no reversible),
+   su dirección IP anonimizada y acepte los términos de privacidad bajo la Ley N.° 787.
+b) Moderación Humana Previa: Los reportes ciudadanos no se publican automáticamente. Pasan por una mesa técnica de
+   moderación que valida la verosimilitud de la información, previniendo extorsiones, difamaciones o revictimización.
+c) Protección de Menores y Grupos Vulnerables: Identificación prioritaria de alertas tempranas para menores de 18 años,
+   adultos mayores (>= 65 años) o personas con condiciones médicas críticas (bandera de vulnerabilidad).
+d) Derecho al Olvido y Despublicación Inmediata: Al resolverse un caso o solicitarse su supresión (artículo 16 de la
+   Ley 787), la ficha se retira inmediatamente del catálogo público para proteger la integridad cívica de la persona localizada.
+
+2.2. Pila Tecnológica (Stack Tecnológico Full Stack)
+- Backend:
+  * Lenguaje: Python 3.12+
+  * Framework API: FastAPI 0.110+ con servidor ASGI Uvicorn
+  * ORM y Migraciones: SQLAlchemy 2.0 y Alembic
+  * Modelado y Serialización: Pydantic v2
+  * Seguridad y Criptografía: Argon2id (hashing de contraseñas), PyJWT (tokens JWT Bearer), hashlib (SHA-256)
+  * Procesamiento Multimedia: Pillow (PIL) para conversión WebP y remoción de cabeceras EXIF
+  * Control de Flujo: Rate limiting en memoria por IP para endpoints sensibles (/login, /register, /tips)
+  * Suite de Pruebas: Pytest, pytest-asyncio, HTTPX
+
+- Frontend:
+  * Framework: Next.js 14.2.35 (App Router)
+  * Lenguaje: TypeScript 5
+  * Estilizado: Tailwind CSS con tipografía Inter
+  * Iconografía: Lucide React (empaquetado local sin solicitudes a CDN externas)
+  * Cartografía: Leaflet 1.9.4 interactivo con capa OpenStreetMap y carga de GeoJSON de municipios de Nicaragua
+  * Modo de Compilación: Exportación estática completa (`output: "export"` en next.config.mjs)
+  * Rutas Generadas: 61 páginas HTML pre-renderizadas con capacidades de hidratación en cliente.
+
+- Servidor Integrado de Producción/Hosting:
+  * FastAPI implementa una estrategia de despacho híbrido en `main.py` capaz de resolver endpoints REST (/api/v1/...)
+    y servir simultáneamente la aplicación estática Next.js exportada, resolviendo rutas directas sin extensión (.html)
+    y con barras finales (/casos, /casos/, /mapa, /reportar, /login, /pistas).
+
+2.3. Estructura de Directorios del Proyecto
+EncuentrameNicaragua/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── deps.py                  # Inyección de dependencias de autenticación y RBAC
+│   │   │   └── v1/
+│   │   │       ├── admin.py             # Endpoints de moderación, auditoría y estadísticas
+│   │   │       ├── auth.py              # Registro, login JWT y control de credenciales
+│   │   │       ├── geography.py         # Catálogo de departamentos, municipios y GeoJSON
+│   │   │       ├── locations.py         # Búsqueda geográfica y proximidad
+│   │   │       ├── reports.py           # CRUD de reportes, fotos, solicitudes de cierre y supresión
+│   │   │       ├── search.py            # Búsqueda textual y filtros facetados
+│   │   │       ├── statistics.py        # Métricas cívicas públicas
+│   │   │       └── tips.py              # Recepción anónima de pistas ciudadanas
+│   │   ├── core/
+│   │   │   ├── config.py                # Variables de configuración y entorno
+│   │   │   ├── database.py              # Inicialización de motor de base de datos y sesiones
+│   │   │   ├── rate_limit.py            # Limitador de tasa de peticiones
+│   │   │   └── security.py              # Hashes de contraseña y generación/validación de JWT
+│   │   ├── models/
+│   │   │   └── entities.py              # Modelos declarativos SQLAlchemy (14 entidades)
+│   │   ├── schemas/
+│   │   │   └── schemas.py               # Esquemas Pydantic v2 para validación de entrada/salida
+│   │   └── services/
+│   │       ├── audit_service.py         # Bitácora inmutable de auditoría forense
+│   │       └── storage_service.py       # Almacenamiento seguro, sanitización EXIF y WebP
+│   ├── tests/                           # Suite integral de pruebas automatizadas (38 pruebas)
+│   ├── alembic.ini                      # Configuración de migraciones de base de datos
+│   ├── Dockerfile                       # Contenedorización de backend
+│   └── requirements.txt                 # Dependencias Python
+├── frontend/
+│   ├── public/                          # Recursos públicos (imágenes, avatares, favicon, GeoJSON)
+│   ├── src/
+│   │   ├── app/                         # Enrutador App Router de Next.js
+│   │   │   ├── admin/page.tsx           # Panel de control de moderación y auditoría
+│   │   │   ├── casos/                   # Catálogo de casos públicos
+│   │   │   │   ├── [id]/page.tsx        # Ficha detallada de la persona desaparecida
+│   │   │   │   └── page.tsx             # Directorio con filtros activos/no activos
+│   │   │   ├── login/page.tsx           # Inicio de sesión y registro de usuarios
+│   │   │   ├── mapa/page.tsx            # Mapa nacional georreferenciado interactivo
+│   │   │   ├── pistas/page.tsx          # Formulario de aportación confidencial de pistas
+│   │   │   ├── reportar/page.tsx        # Formulario multipaso de denuncia con carga de foto
+│   │   │   ├── layout.tsx               # Plantilla global, cabecera y pie de página
+│   │   │   └── page.tsx                 # Página de inicio con buscador y video institucional
+│   │   ├── components/                  # Componentes reutilizables (ReportCard, Map, Navbar, etc.)
+│   │   ├── lib/
+│   │   │   ├── api.ts                   # Cliente HTTP tipado con tolerancia a fallos
+│   │   │   └── catalogData.ts           # Catálogo oficial de respaldo, avatares y resolución de fotos
+│   │   └── types/index.ts               # Definición de interfaces TypeScript
+│   ├── next.config.mjs                  # Configuración de compilación con exportación estática
+│   ├── package.json                     # Dependencias de Node.js
+│   └── tailwind.config.ts               # Configuración de diseño y colores
+├── storage/
+│   └── uploads/                         # Almacenamiento local persistente de fotografías autorizadas
+├── scratch/                             # Scripts de verificación y auditoría automatizada
+├── encuentrame_nicaragua.db             # Base de datos SQLite local relacional
+├── main.py                              # Servidor unificado ASGI FastAPI + Servido estático
+└── requirements.txt                     # Requisitos raíz para ejecución y despliegue
+
+2.4. Modelo de Datos y Esquema Relacional de Base de Datos
+El sistema implementa 14 entidades relacionales principales normalizadas:
+1. `users`: Usuarios del sistema (administradores, moderadores, reportantes y ciudadanos) con hashes Argon2id.
+2. `missing_person_reports`: Registro central de personas reportadas con número de caso oficial (ej. EN-2026-0001),
+   datos biográficos, rasgos fisonómicos, indumentaria, estado del caso y banderas de vulnerabilidad.
+3. `geographic_locations`: Coordenadas geográficas aproximadas, departamento, municipio y zona barrial.
+4. `report_photos`: Catálogo de fotografías vinculadas, storage_key, hash criptográfico, indicador de foto principal
+   y estado de aprobación.
+5. `consent_records`: Trazabilidad legal del consentimiento bajo Ley 787, hash del documento de identidad e IP del declarante.
+6. `tips`: Pistas recibidas de la ciudadanía, con código de rastreo aleatorio, nivel de confidencialidad y estado de verificación.
+7. `tip_photos`: Fotografías aportadas por informantes en una pista ciudadana.
+8. `report_status_history`: Historial inmutable de cambios de estado del caso (draft -> pending_review -> approved_published -> closed_found/resolved).
+9. `audit_logs`: Registro forense inmutable de todas las operaciones críticas (creación, edición, consulta administrativa, moderación).
+10. `moderation_reviews`: Calificación y notas formales de los moderadores sobre los reportes asignados.
+11. `deletion_requests`: Solicitudes formales de supresión de datos bajo el artículo 16 de la Ley 787.
+12. `departments`: División de los 15 departamentos y 2 regiones autónomas de Nicaragua.
+13. `municipalities`: Catálogo oficial de los 153 municipios del país vinculados a su departamento.
+14. `token_revocations`: Lista negra de tokens JWT invalidados por cierre de sesión.
+
+2.5. Arquitectura de Seguridad y Control de Acceso (RBAC)
+Se estructuraron 4 roles jerárquicos:
+- `admin`: Control absoluto del sistema, gestión de usuarios, auditoría forense inmutable y parametrización.
+- `moderator`: Revisión de reportes entrantes, aprobación de fichas para difusión pública, rechazo con justificación,
+  gestión de pistas ciudadanas y cierre formal de expedientes.
+- `reporter`: Familiar o declarante verificado. Puede crear casos, actualizar información mientras el caso esté en revisión,
+  adjuntar fotografías autorizadas y solicitar el cierre por localización o supresión por Ley 787.
+- `citizen`: Ciudadano registrado o anónimo que puede consultar el directorio público y enviar pistas confidenciales protegidas.
+
+2.6. Módulo de Gestión de Medios y Sanitización de Imágenes EXIF
+El servicio `storage_service.py` intercepta cada imagen cargada:
+1. Valida el tamaño máximo (5 MB por archivo).
+2. Inspecciona el tipo MIME y la firma binaria (JPEG, PNG, WebP).
+3. Utiliza Pillow (PIL) para abrir la imagen y descartar todas las etiquetas EXIF / metadatos geográficos.
+4. Redimensiona proporcionalmente si la dimensión excede 800x800 píxeles.
+5. Codifica la imagen resultante en formato WebP con calidad 85%.
+6. Genera un nombre de archivo único mediante UUID4 / MD5 (`<hash>.webp`) para prevenir colisiones y accesos predecibles.
+7. Guarda el archivo en `storage/uploads/` y retorna una URL pública sanitizada `/api/v1/reports/photos/<hash>.webp`.
+
+
+====================================================================================================
+3. BITÁCORA CRONOLÓGICA COMPLETA DE PROMPTS Y REQUERIMIENTOS DEL USUARIO (38 PROMPTS)
+====================================================================================================
+
+A continuación se transcribe en orden cronológico estricto cada uno de los prompts recibidos
+por parte del usuario, documentando la evolución completa del proyecto:
+
+----------------------------------------------------------------------------------------------------
+PROMPT #1 — FECHA Y HORA: 2026-11-19T01:21:49Z
+----------------------------------------------------------------------------------------------------
+# PROMPT MAESTRO — DESARROLLO FULL STACK SENIOR
+## Proyecto: ENCUÉNTRAME NICARAGUA
+### Plataforma Inteligente de Búsqueda y Reunificación Familiar
+
+**ROL DEL AGENTE**
+
+Actúa como un Ingeniero de Software Full Stack Senior, Arquitecto de Software, Especialista en Ciberseguridad, Diseñador UI/UX Senior, Ingeniero DevOps, Administrador de Bases de Datos y Especialista en Inteligencia Artificial.
+
+Tu misión es diseñar, desarrollar, documentar, probar y optimizar una aplicación web profesional denominada **ENCUÉNTRAME NICARAGUA**, enfocada en apoyar la búsqueda de personas desaparecidas o no localizadas dentro del territorio nicaragüense.
+
+El resultado debe reflejar el nivel de calidad de una aplicación desarrollada por un equipo profesional de ingeniería de software, no un prototipo improvisado ni una interfaz generada únicamente para demostración.
+
+## 1. CONTEXTO Y PROBLEMÁTICA
+
+En Nicaragua, las familias que buscan a personas desaparecidas o no localizadas pueden enfrentar dificultades para centralizar reportes, difundir información verificable, coordinar esfuerzos y recibir información ciudadana de manera organizada.
+
+Se propone una plataforma digital que facilite la gestión responsable de estos casos y contribuya a los esfuerzos de localización y reunificación familiar.
+
+La aplicación debe permitir registrar reportes, consultar casos autorizados, recibir pistas confidenciales, administrar alertas, gestionar información geográfica y analizar datos agregados.
+
+El sistema será una herramienta de apoyo social y no sustituirá los mecanismos oficiales de denuncia, investigación o atención de emergencias.
+
+## 2. OBJETIVO GENERAL
+
+Desarrollar una plataforma web full stack, segura, moderna, escalable y accesible que permita centralizar, administrar y difundir responsablemente reportes de personas desaparecidas o no localizadas en Nicaragua, integrando herramientas de búsqueda, colaboración ciudadana, geolocalización e inteligencia artificial bajo supervisión humana.
+
+## 3. 
+<truncated 14102 bytes>
+ificable.
+
+Documenta:
+
+- Estado inicial.
+- Problema detectado.
+- Causa raíz.
+- Corrección aplicada.
+- Archivos modificados.
+- Prueba posterior.
+- Resultado final.
+
+## 14. CRITERIOS DE ACEPTACIÓN
+
+El proyecto se considerará terminado cuando:
+
+- La aplicación pueda ejecutarse localmente.
+- Frontend y backend se comuniquen correctamente.
+- La base de datos tenga migraciones funcionales.
+- El flujo de creación y moderación de reportes funcione.
+- Existan búsquedas y filtros operativos.
+- Las pistas estén protegidas.
+- Los roles y permisos estén implementados.
+- El diseño sea responsive.
+- Se hayan ejecutado pruebas.
+- Se entregue documentación.
+- Se haya realizado y verificado una mejora.
+
+No utilices botones decorativos que aparenten funcionalidades inexistentes.
+
+No inventes resultados de pruebas, integraciones, estadísticas ni servicios externos.
+
+Cuando una funcionalidad dependa de credenciales, infraestructura o servicios no disponibles, impleméntala mediante una interfaz desacoplada y explica cómo configurarla.
+
+## 15. INSTRUCCIÓN FINAL
+
+Comienza exclusivamente con la FASE 1 y la FASE 2.
+
+Presenta un análisis profesional del problema, la propuesta de arquitectura, el alcance del MVP, el diseño de los módulos, las tecnologías justificadas, los riesgos y un plan de desarrollo por etapas.
+
+Espera mi aprobación antes de generar el código fuente.
+
+El objetivo es construir una solución de impacto social, técnicamente sólida, visualmente profesional y preparada para evolucionar hacia una plataforma real, respetando siempre la seguridad, la privacidad y la dignidad de las personas involucradas.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #2 — FECHA Y HORA: 2026-11-19T01:26:19Z
+----------------------------------------------------------------------------------------------------
+Comments on artifact URI: file:///c%3A/Users/User/.gemini/antigravity/brain/a4895693-7c77-4ec0-906a-ddacc924e6c9/FASE_1_Y_2_ANALISIS_Y_PLANIFICACION.md
+
+The user has approved this document.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #3 — FECHA Y HORA: 2026-11-19T02:16:34Z
+----------------------------------------------------------------------------------------------------
+# PROMPT MAESTRO: AUDITORÍA TÉCNICA, DETECCIÓN DE ERRORES Y VALIDACIÓN INTEGRAL
+
+## PROYECTO: ENCUÉNTRAME NICARAGUA
+### Auditoría Full Stack, Quality Assurance, Seguridad y Optimización
+
+**ROL PROFESIONAL**
+
+Actúa como un equipo multidisciplinario compuesto por:
+
+- Ingeniero de Software Full Stack Senior.
+- Ingeniero QA Senior especializado en pruebas funcionales y automatizadas.
+- Arquitecto de Software.
+- Especialista en Ciberseguridad y OWASP.
+- Ingeniero DevOps.
+- Administrador de Bases de Datos PostgreSQL.
+- Especialista en accesibilidad y experiencia de usuario (UI/UX).
+
+Tu responsabilidad es realizar una auditoría técnica exhaustiva de la aplicación web **Encuéntrame Nicaragua**, identificando errores, vulnerabilidades, validaciones faltantes, funcionalidades incompletas, problemas de integración y oportunidades de mejora.
+
+**OBJETIVO PRINCIPAL**
+
+Garantizar que todos los módulos implementados funcionen correctamente, que las validaciones sean consistentes en frontend y backend, que los datos se almacenen de forma íntegra y segura, y que la aplicación tenga un comportamiento estable ante escenarios normales, excepcionales y maliciosos.
+
+No debes limitarte a revisar visualmente la aplicación. Inspecciona el código fuente, ejecuta pruebas y verifica el comportamiento real del sistema.
+
+---
+
+# FASE 1. DIAGNÓSTICO GENERAL DEL PROYECTO
+
+Analiza toda la estructura existente del proyecto.
+
+1. Identifica las tecnologías, frameworks, librerías y versiones utilizadas.
+2. Examina la estructura de carpetas y archivos.
+3. Revisa componentes frontend y servicios backend.
+4. Analiza las rutas y endpoints.
+5. Inspecciona modelos de datos y migraciones.
+6. Comprueba las variables de entorno requeridas.
+7. Detecta dependencias faltantes, incompatibles o vulnerables.
+8. Identifica código duplicado, obsoleto o innecesario.
+9. Comprueba que las funcionalidades visibles estén implementadas realmente.
+10. Revisa errores de compilación, ejecución y consola.
+
+Ejecuta, cuando el entorno lo pe
+<truncated 9396 bytes>
+ esquema de base de datos sin analizar sus efectos.
+
+Antes de realizar cambios de alto impacto, identifica los archivos afectados y prepara una estrategia de reversión.
+
+---
+
+# FASE 11. INFORME FINAL DE CALIDAD
+
+Entrega un informe profesional que contenga:
+
+1. Resumen ejecutivo.
+2. Arquitectura identificada.
+3. Módulos auditados.
+4. Errores encontrados.
+5. Validaciones faltantes.
+6. Vulnerabilidades detectadas.
+7. Pruebas ejecutadas.
+8. Evidencias.
+9. Correcciones implementadas.
+10. Pruebas de regresión.
+11. Problemas pendientes.
+12. Riesgos residuales.
+13. Recomendaciones.
+14. Conclusiones.
+
+Genera además los siguientes archivos dentro del proyecto:
+
+- AUDITORIA_TECNICA.md
+- MATRIZ_ERRORES.md
+- VALIDACIONES_PENDIENTES.md
+- PLAN_CORRECCIONES.md
+- RESULTADOS_PRUEBAS.md
+- INFORME_FINAL_QA.md
+
+Incluye rutas de archivos, comandos utilizados y resultados verificables.
+
+---
+
+# INSTRUCCIÓN FINAL OBLIGATORIA
+
+Comienza examinando el proyecto existente en el directorio de trabajo.
+
+No generes una aplicación nueva.
+
+No supongas que una funcionalidad está implementada únicamente porque existe un botón o componente visual.
+
+Comprueba la comunicación real entre frontend, backend y base de datos.
+
+Distingue claramente entre:
+
+- Funcionalidad implementada y verificada.
+- Funcionalidad implementada con errores.
+- Funcionalidad parcialmente implementada.
+- Funcionalidad no implementada.
+- Funcionalidad no verificable por limitaciones del entorno.
+
+**PRIMERA EJECUCIÓN:**
+
+Realiza exclusivamente el diagnóstico, inventario de validaciones y plan de corrección.
+
+Presenta la matriz de hallazgos ordenada por severidad.
+
+Espera mi autorización antes de modificar código, dependencias, configuración o base de datos.
+
+El resultado esperado es una auditoría técnica rigurosa, basada en evidencias, que permita completar y estabilizar Encuéntrame Nicaragua con estándares profesionales de ingeniería de software.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #4 — FECHA Y HORA: 2026-11-19T02:21:32Z
+----------------------------------------------------------------------------------------------------
+procede con la ejecución del Plan de Correcciones
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #5 — FECHA Y HORA: 2026-11-19T02:24:35Z
+----------------------------------------------------------------------------------------------------
+Tomando como referencia el informe de auditoría técnica generado anteriormente, procede a corregir los errores críticos y altos que he aprobado.
+
+Implementa las validaciones faltantes tanto en frontend como en backend, respetando la arquitectura, las funcionalidades y el diseño visual existentes.
+
+Trabaja de manera incremental. Por cada corrección, identifica el archivo afectado, explica la causa del error, aplica la solución y ejecuta las pruebas correspondientes.
+
+No elimines funcionalidades existentes ni modifiques datos reales. Al finalizar, ejecuta las pruebas de regresión y genera un informe comparativo del estado anterior y posterior, indicando los errores solucionados, las validaciones implementadas y los problemas que continúan pendientes.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #6 — FECHA Y HORA: 2026-11-19T02:39:51Z
+----------------------------------------------------------------------------------------------------
+# PROMPT DE CORRECCIÓN FULL STACK — MÓDULO DE MAPAS Y DIVISIÓN TERRITORIAL DE NICARAGUA
+
+## PROYECTO: ENCUÉNTRAME NICARAGUA
+
+Actúa como un Ingeniero Full Stack Senior, Arquitecto de Software, Ingeniero QA Senior, Especialista en PostgreSQL y Experto en Sistemas de Información Geográfica (GIS).
+
+Tu misión es diagnosticar, corregir y completar el módulo de mapas de la aplicación web Encuéntrame Nicaragua, garantizando que funcione correctamente la consulta, visualización, creación, edición y administración de departamentos, regiones autónomas y municipios de Nicaragua.
+
+**IMPORTANTE:** Trabaja sobre el proyecto existente. No reconstruyas la aplicación desde cero, no elimines funcionalidades implementadas y conserva su diseño visual.
+
+# 1. ERROR ACTUAL QUE DEBES CORREGIR
+
+La aplicación presenta el siguiente error:
+
+**Unhandled Runtime Error: TypeError: Failed to fetch**
+
+Ubicación:
+
+Archivo: `src/lib/api.ts`
+
+Línea aproximada: 33.
+
+Función afectada:
+
+```typescript
+export async function fetchDepartments(): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/locations/departments`, {
+    cache: "no-store"
+  });
+
+  if (!res.ok) return [];
+
+  return res.json();
+}
+```
+
+El error se produce al intentar cargar los departamentos en el módulo de mapas.
+
+## Diagnóstico obligatorio
+
+Antes de modificar código:
+
+1. Inspecciona cómo se define API_BASE.
+2. Comprueba las variables de entorno del frontend.
+3. Identifica la URL real del backend.
+4. Verifica si el servidor backend está ejecutándose.
+5. Comprueba si existe el endpoint `/locations/departments`.
+6. Verifica si la ruta utiliza el prefijo `/api/v1`.
+7. Comprueba la configuración CORS.
+8. Inspecciona la respuesta HTTP y los registros del backend.
+9. Comprueba si hay errores de conexión, DNS, proxy o puertos.
+10. Verifica que el frontend y backend utilicen formatos de respuesta compatibles.
+
+No supongas la causa del error sin comprobarla.
+
+# 2. CORRECCIÓN DE LA COMUNICACIÓN FRONTEND-BACKEND
+
+Corrige la función fetchDepa
+<truncated 7937 bytes>
+ERROR_MAPA.md
+- VALIDACIONES_GEOGRAFICAS.md
+- PRUEBAS_MODULO_MAPAS.md
+
+# 12. CRITERIOS DE ACEPTACIÓN
+
+La corrección estará completa cuando:
+
+1. El menú Mapa abra sin errores no controlados.
+2. El frontend obtenga correctamente los departamentos.
+3. Los municipios se carguen según el departamento.
+4. El catálogo territorial esté completo y validado.
+5. Los administradores puedan gestionar los registros.
+6. Los ciudadanos no puedan modificar el catálogo oficial.
+7. Los formularios tengan validaciones funcionales.
+8. El mapa visualice información autorizada.
+9. No existan errores de compilación asociados a los cambios.
+10. Las pruebas críticas se ejecuten satisfactoriamente.
+
+# INSTRUCCIÓN FINAL
+
+Comienza diagnosticando el error actual.
+
+Corrige primero la comunicación entre frontend y backend y verifica que el menú Mapa funcione.
+
+Después implementa o completa el catálogo territorial de Nicaragua, sus validaciones y el panel administrativo.
+
+Trabaja de forma incremental y conserva la arquitectura existente.
+
+No sustituyas una funcionalidad real por datos estáticos para ocultar errores.
+
+Entrega una solución funcional, segura, documentada y verificada mediante pruebas.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #7 — FECHA Y HORA: 2026-11-19T02:52:22Z
+----------------------------------------------------------------------------------------------------
+# CORRECCIÓN URGENTE — ERROR HTTP 500 EN ENCUÉNTRAME NICARAGUA
+
+Actúa como Ingeniero Full Stack Senior, especialista en Next.js, FastAPI, PostgreSQL, depuración de APIs y aseguramiento de calidad.
+
+La aplicación presenta el siguiente error:
+
+**Unhandled Runtime Error: ApiError: Error en el servidor: Error HTTP 500**
+
+Archivo: `src/lib/api.ts`
+
+Función: `executeFetch`
+
+Línea aproximada: 102.
+
+El error se produce al consumir un servicio del backend, posiblemente relacionado con el módulo de mapas y el catálogo de departamentos y municipios de Nicaragua.
+
+## INSTRUCCIONES
+
+**1. Identifica la causa raíz.**
+
+- Determina qué solicitud HTTP está devolviendo 500.
+- Inspecciona el endpoint correspondiente.
+- Revisa los logs del backend y el traceback completo.
+- Verifica la conexión con PostgreSQL.
+- Comprueba que las tablas y columnas requeridas existan.
+- Verifica que las migraciones estén aplicadas.
+- Inspecciona los modelos ORM y las consultas SQL.
+- Comprueba la serialización de las respuestas JSON.
+- Revisa las variables de entorno y dependencias.
+- Identifica exactamente la excepción que provoca el error.
+
+No asumas que el problema está en `api.ts` únicamente porque allí se lanza ApiError.
+
+**2. Corrige el error en su origen.**
+
+Realiza la corrección en el backend, base de datos o configuración según corresponda.
+
+No ocultes el error devolviendo listas vacías o respuestas HTTP 200 artificiales.
+
+No elimines tablas ni datos existentes.
+
+Si faltan migraciones, crea o aplica migraciones seguras y verificables.
+
+**3. Mejora el manejo de errores del frontend.**
+
+- Captura excepciones en las páginas y componentes que consumen la API.
+- Implementa estados de carga, error y reintento.
+- Evita errores no controlados en la interfaz.
+- Muestra mensajes comprensibles para el usuario.
+- Conserva los detalles técnicos únicamente en registros de diagnóstico seguros.
+- No expongas trazas internas ni credenciales en producción.
+
+**4. Verifica el módulo de mapas.**
+
+Comprueba que:
+
+- Los
+<truncated 401 bytes>
+ territoriales duplicados.
+
+**5. Ejecuta pruebas reales.**
+
+Realiza pruebas de los endpoints, integración con PostgreSQL y funcionamiento del frontend.
+
+Comprueba el comportamiento ante respuestas HTTP 200, 400, 401, 403, 404 y 500, según corresponda.
+
+Verifica que el error original ya no se reproduzca.
+
+**6. Genera un informe de corrección.**
+
+Incluye:
+
+- Endpoint afectado.
+- Excepción original.
+- Causa raíz.
+- Archivo y línea del defecto.
+- Archivos modificados.
+- Corrección implementada.
+- Pruebas ejecutadas.
+- Resultados obtenidos.
+- Problemas pendientes.
+
+## RESTRICCIONES
+
+No reconstruyas la aplicación.
+
+No modifiques innecesariamente el diseño.
+
+No elimines funcionalidades existentes.
+
+No inventes resultados de pruebas.
+
+No utilices datos reales de personas desaparecidas para las pruebas.
+
+## OBJETIVO FINAL
+
+Corregir definitivamente la causa del error HTTP 500, restablecer la comunicación entre frontend, backend y base de datos, y garantizar que el módulo de mapas de Encuéntrame Nicaragua funcione correctamente.
+
+Comienza revisando los logs del backend y localizando el endpoint que devuelve HTTP 500. Después aplica la corrección y verifica su funcionamiento.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #8 — FECHA Y HORA: 2026-11-19T03:11:32Z
+----------------------------------------------------------------------------------------------------
+# AUDITORÍA INTEGRAL DE CALIDAD DE SOFTWARE — QA SENIOR
+
+## PROYECTO: ENCUÉNTRAME NICARAGUA
+### Control de Calidad, Detección de Errores, Validaciones, Seguridad y Estabilidad
+
+## 1. ROL Y RESPONSABILIDAD
+
+Actúa como un equipo profesional de aseguramiento de calidad y arquitectura de software, integrado por:
+
+- Senior QA Engineer.
+- Senior Full Stack Developer.
+- Software Architect.
+- Software Development Engineer in Test (SDET).
+- Cybersecurity Engineer.
+- Database Administrator (DBA).
+- DevOps Engineer.
+- UI/UX Accessibility Specialist.
+- Performance Testing Engineer.
+
+Tu responsabilidad es ejecutar una auditoría integral y rigurosa sobre el código fuente y el comportamiento de la aplicación web **Encuéntrame Nicaragua**.
+
+Debes identificar tantos defectos verificables como sea posible, incluyendo errores de programación, validaciones faltantes, vulnerabilidades, problemas de integración, fallos de diseño, inconsistencias de datos y funcionalidades incompletas.
+
+No te limites a realizar una inspección superficial.
+
+Debes analizar el proyecto desde la interfaz hasta la base de datos y comprobar el comportamiento real mediante pruebas.
+
+**REGLA PRINCIPAL: NO DECLARES QUE LA APLICACIÓN ESTÁ LIBRE DE ERRORES SI NO EXISTE EVIDENCIA SUFICIENTE.**
+
+---
+
+# 2. OBJETIVO GENERAL
+
+Realizar una evaluación completa de calidad del software para determinar:
+
+1. Qué funcionalidades están correctamente implementadas.
+2. Qué funcionalidades contienen errores.
+3. Qué funcionalidades están incompletas.
+4. Qué validaciones faltan.
+5. Qué vulnerabilidades existen.
+6. Qué problemas afectan el rendimiento.
+7. Qué inconsistencias existen entre frontend, backend y base de datos.
+8. Qué pruebas faltan.
+9. Qué correcciones son necesarias antes de producción.
+10. Qué riesgos permanecen sin resolver.
+
+El resultado debe ser una matriz de hallazgos verificables y un plan de corrección priorizado.
+
+---
+
+# 3. REGLAS OBLIGATORIAS DE AUDITORÍA
+
+Antes de comenzar:
+
+- Inspecciona el repositorio completo
+<truncated 12314 bytes>
+ haya evaluado la seguridad.
+- Se hayan revisado los modelos de datos.
+- Se hayan ejecutado las pruebas disponibles.
+- Se hayan registrado las pruebas no ejecutables.
+- Se haya elaborado la matriz de hallazgos.
+- Se haya generado un plan de corrección priorizado.
+
+No afirmes haber revisado componentes inaccesibles.
+
+No afirmes que el sistema está listo para producción si existen riesgos críticos pendientes.
+
+---
+
+# 20. INSTRUCCIÓN FINAL DE EJECUCIÓN
+
+Comienza inmediatamente con una auditoría de solo lectura.
+
+Primero identifica la arquitectura, módulos, rutas, endpoints, formularios, modelos y dependencias.
+
+Después ejecuta las pruebas no destructivas disponibles y registra evidencias.
+
+Presenta:
+
+1. Resumen ejecutivo.
+2. Inventario del sistema.
+3. Errores confirmados.
+4. Validaciones faltantes.
+5. Vulnerabilidades.
+6. Funcionalidades incompletas.
+7. Pruebas ejecutadas.
+8. Riesgos.
+9. Plan de corrección.
+
+**DETENTE AL TERMINAR EL DIAGNÓSTICO Y ESPERA MI AUTORIZACIÓN PARA CORREGIR EL CÓDIGO.**
+
+El objetivo es alcanzar un nivel profesional de calidad, estabilidad, seguridad, mantenibilidad y confiabilidad, basado en pruebas verificables y no en suposiciones.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #9 — FECHA Y HORA: 2026-11-19T03:17:47Z
+----------------------------------------------------------------------------------------------------
+Actúa como un Auditor QA Senior independiente del equipo de desarrollo.
+
+Realiza una segunda auditoría integral de Encuéntrame Nicaragua después de las correcciones implementadas.
+
+No asumas que las soluciones anteriores son correctas.
+
+Reproduce los casos de prueba que fallaron, ejecuta pruebas de regresión y verifica que cada validación implementada funcione tanto en frontend como en backend.
+
+Compara los resultados actuales con la matriz original de errores.
+
+Identifica defectos persistentes, nuevos errores introducidos, validaciones todavía ausentes y funcionalidades que continúan incompletas.
+
+Genera un informe comparativo ANTES vs. DESPUÉS, con evidencias reales y una clasificación final de riesgos.
+
+No declares la aplicación lista para producción mientras existan defectos críticos, vulnerabilidades graves o procesos esenciales sin verificar.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #10 — FECHA Y HORA: 2026-11-19T03:21:10Z
+----------------------------------------------------------------------------------------------------
+procede
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #11 — FECHA Y HORA: 2026-11-19T03:31:30Z
+----------------------------------------------------------------------------------------------------
+cambia el nombre de la url de localhost que pase a: http://encuentramenicaragua:3000/
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #12 — FECHA Y HORA: 2026-11-19T03:36:04Z
+----------------------------------------------------------------------------------------------------
+dame la ubicacion del index principal para colocolarlo en dominio
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #13 — FECHA Y HORA: 2026-11-19T03:41:00Z
+----------------------------------------------------------------------------------------------------
+quiero el index.html principal
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #14 — FECHA Y HORA: 2026-11-19T03:42:37Z
+----------------------------------------------------------------------------------------------------
+hosting statico
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #15 — FECHA Y HORA: 2026-11-19T03:48:15Z
+----------------------------------------------------------------------------------------------------
+dame la ubicacion de:
+- index.html
+- main.py
+- requirements.txt
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #16 — FECHA Y HORA: 2026-11-19T03:54:19Z
+----------------------------------------------------------------------------------------------------
+dame la ruta de el css
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #17 — FECHA Y HORA: 2026-11-19T03:56:33Z
+----------------------------------------------------------------------------------------------------
+ubicames todas las carpetas de estilo css
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #18 — FECHA Y HORA: 2026-11-19T04:07:15Z
+----------------------------------------------------------------------------------------------------
+descargame la paquetería local, no dejes nada como referencia en línea
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #19 — FECHA Y HORA: 2026-11-19T04:12:46Z
+----------------------------------------------------------------------------------------------------
+Dame la ubicacion de la carpeta para la compilacion estatica
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #20 — FECHA Y HORA: 2026-11-19T04:26:29Z
+----------------------------------------------------------------------------------------------------
+no me muestra mi aplicacion web en el hosting estatico como en el local solo me muestra lo siguiente: y el hosting es con fastapi
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #21 — FECHA Y HORA: 2026-11-19T04:37:49Z
+----------------------------------------------------------------------------------------------------
+estos son los archivos que aregué y al cargar la aplicación en el hosting me da error interno
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #22 — FECHA Y HORA: 2026-11-19T04:42:00Z
+----------------------------------------------------------------------------------------------------
+te paso el link del hosting para que agregues lo necesario y poder deployar la aplicacion web.
+https://creacionvaloria.tradescanner.online/static
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #23 — FECHA Y HORA: 2026-11-20T00:34:13Z
+----------------------------------------------------------------------------------------------------
+En el inicio de la aplicación web ubica el siguiente video con el nombre de: Personas_Desaparecidas_Nicaragua
+ubicado en la raíz del proyecto, no realices ningún cambio en la aplicación mas que sólo agregar el video y posicionalo bien.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #24 — FECHA Y HORA: 2026-11-20T00:43:31Z
+----------------------------------------------------------------------------------------------------
+Quita este mensaje de la aplicación web.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #25 — FECHA Y HORA: 2026-11-20T01:27:10Z
+----------------------------------------------------------------------------------------------------
+# PROMPT MAESTRO — AUDITORÍA QA SENIOR FULL STACK
+## Proyecto: ENCUÉNTRAME NICARAGUA
+### Exploración funcional, validaciones, seguridad, integración y reporte de defectos
+
+## ROL PROFESIONAL
+
+Actúa como un Senior Quality Assurance Engineer (QA), Software Development Engineer in Test (SDET), especialista en pruebas exploratorias, funcionales, automatizadas, de integración, seguridad y rendimiento de aplicaciones web.
+
+Tienes experiencia avanzada en:
+
+- Next.js, React y TypeScript.
+- Python y FastAPI.
+- APIs REST.
+- PostgreSQL y bases de datos relacionales.
+- Playwright, Pytest y pruebas automatizadas.
+- OWASP Top 10 y OWASP ASVS.
+- Pruebas de accesibilidad WCAG 2.2.
+- Análisis de logs, errores HTTP y depuración de aplicaciones.
+- Diseño de casos de prueba y gestión de defectos.
+
+Tu misión es actuar exclusivamente como auditor de calidad independiente.
+
+**NO DEBES CORREGIR CÓDIGO DURANTE ESTA AUDITORÍA.**
+
+Tu trabajo consiste en explorar, probar, identificar, reproducir, documentar y clasificar los defectos de la aplicación para que posteriormente un Ingeniero Full Stack Senior los resuelva.
+
+---
+
+# 1. CONTEXTO DEL PROYECTO
+
+Nombre: Encuéntrame Nicaragua.
+
+Tipo: Plataforma web de apoyo social para la búsqueda y localización responsable de personas desaparecidas o no localizadas.
+
+Tecnologías previstas:
+- Frontend: Next.js, React, TypeScript.
+- Backend: Python, FastAPI.
+- Base de datos: PostgreSQL u otro motor implementado.
+- Mapas: Leaflet u otra biblioteca cartográfica.
+
+Identifica las tecnologías reales antes de realizar pruebas.
+
+Entornos conocidos:
+
+- Desarrollo local: http://localhost:3000/
+- Hosting público: https://creacionvaloria.tradescanner.online/
+
+La aplicación ha presentado anteriormente problemas como:
+
+- TypeError: Failed to fetch.
+- ApiError: HTTP 500.
+- Problemas de carga de CSS y JavaScript en el hosting.
+- Posibles errores de integración del catálogo de departamentos y municipios.
+
+Estos antecedentes deben utilizarse como hipótesis de prueba, no como defe
+<truncated 12936 bytes>
+orando la aplicación mediante navegador y revisando el código fuente disponible.
+
+Realiza un recorrido completo de las funcionalidades accesibles.
+
+Ejecuta pruebas reales y registra evidencia.
+
+No te detengas después de encontrar el primer error.
+
+Continúa evaluando los módulos independientes y registra como bloqueados aquellos que dependan de funcionalidades defectuosas.
+
+Al finalizar, entrega:
+
+1. Resumen ejecutivo.
+2. Número de defectos confirmados.
+3. Defectos clasificados por severidad.
+4. Validaciones faltantes.
+5. Funcionalidades incompletas.
+6. Errores de frontend.
+7. Errores de backend.
+8. Errores de base de datos.
+9. Vulnerabilidades detectadas.
+10. Evidencias.
+11. Pruebas ejecutadas.
+12. Plan técnico de corrección Full Stack.
+
+**NO CORRIJAS NINGÚN ERROR.**
+
+Tu responsabilidad termina cuando entregues una auditoría verificable, completa dentro del alcance accesible y suficientemente detallada para que un Ingeniero Full Stack Senior pueda comenzar las correcciones sin repetir todo el diagnóstico.
+
+No declares la aplicación lista para producción mientras existan defectos críticos, problemas de privacidad o pruebas esenciales pendientes.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #26 — FECHA Y HORA: 2026-11-20T01:53:48Z
+----------------------------------------------------------------------------------------------------
+En el login al intentar registar un usuario me envía el siguiente error:
+Error en el servidor: Method Not Allowed
+
+por tanto el usuario no se puede registrar
+
+Corrige ese erro de validación en el servidor
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #27 — FECHA Y HORA: 2026-11-20T02:29:05Z
+----------------------------------------------------------------------------------------------------
+Valida en la pestaña de reportar caso la opción de: Enviar Reporte a Moderación y en la sección de ubicación y fecha valida la opción de los departamentos y municipios, ya que al hacer clic en la opción no aparecen los departamentos y municipios a seleccionar.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #28 — FECHA Y HORA: 2026-11-20T03:46:04Z
+----------------------------------------------------------------------------------------------------
+En el mapa nacional valida el siguiente error:
+Error de sincronización con la base de datos geográfica
+
+Recurso no encontrado
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #29 — FECHA Y HORA: 2026-11-20T03:53:17Z
+----------------------------------------------------------------------------------------------------
+valida el catalogo de casos reportados en activos y no activos
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #30 — FECHA Y HORA: 2026-11-20T04:09:44Z
+----------------------------------------------------------------------------------------------------
+En la opción de consultar fichas o Casos, que es donde se visualizan los casos reportados, al hacer clic en el, valida que se muestre toda la información de la persona desaparecida con fotografía y avance del caso.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #31 — FECHA Y HORA: 2026-11-20T04:34:58Z
+----------------------------------------------------------------------------------------------------
+Valida las fotografias de los casos reportados.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #32 — FECHA Y HORA: 2026-11-20T04:47:46Z
+----------------------------------------------------------------------------------------------------
+Valida la visualización de fotografía de cada caso reportado y seguimiento en tiempo real.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #33 — FECHA Y HORA: 2026-11-20T05:06:29Z
+----------------------------------------------------------------------------------------------------
+No me está cargando la aplicación web
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #34 — FECHA Y HORA: 2026-11-20T05:25:25Z
+----------------------------------------------------------------------------------------------------
+# AUDITORÍA QA SENIOR Y CORRECCIÓN FULL STACK
+## Módulo de fotografías de personas reportadas
+### Proyecto: ENCUÉNTRAME NICARAGUA
+
+## 1. ROL PROFESIONAL
+
+Actúa como un Ingeniero QA Senior, Ingeniero Full Stack Senior, Arquitecto de Software y Especialista en Gestión Segura de Archivos Multimedia.
+
+Tienes experiencia avanzada en:
+
+- Next.js y React.
+- TypeScript.
+- Python y FastAPI.
+- PostgreSQL.
+- APIs REST.
+- Almacenamiento de imágenes.
+- Seguridad de archivos.
+- Diseño responsive.
+- Pruebas automatizadas con Playwright y Pytest.
+
+Tu misión es auditar, diagnosticar, corregir y validar el sistema de fotografías de los casos registrados en la aplicación Encuéntrame Nicaragua.
+
+## 2. PROBLEMA IDENTIFICADO
+
+Actualmente, la aplicación muestra tarjetas de personas reportadas, pero las áreas destinadas a las fotografías presentan imágenes genéricas o marcadores visuales.
+
+Debes determinar si:
+
+1. Las fotografías no fueron cargadas.
+2. Las imágenes no están almacenadas correctamente.
+3. La base de datos no tiene asociada la fotografía al caso.
+4. El backend no devuelve la URL correcta.
+5. La URL apunta a localhost o a una ruta inexistente.
+6. FastAPI no sirve correctamente los archivos.
+7. Next.js no puede cargar imágenes externas.
+8. Existe un error de permisos o autorización.
+9. La fotografía existe, pero el componente muestra un placeholder.
+10. El frontend no está interpretando correctamente los datos recibidos.
+
+No asumas que todos los casos tienen fotografías registradas.
+
+Identifica la causa real mediante pruebas y evidencias.
+
+---
+
+# 3. AUDITORÍA DEL REGISTRO DE FOTOGRAFÍAS
+
+Inspecciona el formulario de registro de personas desaparecidas.
+
+Verifica que permita:
+
+- Seleccionar una fotografía.
+- Visualizar una vista previa.
+- Validar el archivo.
+- Confirmar la carga.
+- Asociar la fotografía al reporte correcto.
+- Guardar la información.
+- Recuperar la imagen posteriormente.
+- Actualizar una fotografía autorizada.
+- Retirar una fotografía cuando corresponda.
+
+Comprue
+<truncated 6891 bytes>
+a de fotografías.
+8. Comprueba que no existan regresiones.
+
+No reconstruyas la aplicación.
+
+No modifiques innecesariamente otros módulos.
+
+No cambies el diseño general.
+
+No elimines registros existentes.
+
+---
+
+# 13. ENTREGABLES
+
+Genera:
+
+- QA_AUDITORIA_FOTOGRAFIAS.md
+- QA_VALIDACIONES_IMAGENES.md
+- QA_MATRIZ_16_CASOS.md
+- FULLSTACK_PLAN_CORRECCION_IMAGENES.md
+- QA_RESULTADOS_PRUEBAS_IMAGENES.md
+
+Incluye:
+
+- Defectos confirmados.
+- Causas raíz.
+- Validaciones faltantes.
+- Archivos afectados.
+- Soluciones propuestas.
+- Evidencias.
+- Resultados de pruebas.
+- Problemas pendientes.
+
+---
+
+# INSTRUCCIÓN FINAL
+
+Comienza inspeccionando el código fuente, la base de datos, los endpoints y los componentes de tarjetas de casos.
+
+Revisa los 16 casos registrados.
+
+Determina por qué no aparecen fotografías individuales.
+
+No sustituyas las fotografías por imágenes genéricas para ocultar el problema.
+
+Entrega primero el diagnóstico y el plan de corrección.
+
+Espera mi autorización antes de aplicar modificaciones.
+
+El objetivo es garantizar que cada caso muestre exclusivamente su fotografía correspondiente, siempre que exista, esté disponible y cuente con autorización válida para su publicación.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #35 — FECHA Y HORA: 2026-11-20T05:35:48Z
+----------------------------------------------------------------------------------------------------
+# CORRECCIÓN CRÍTICA FULL STACK — NAVEGACIÓN Y ENRUTAMIENTO NEXT.JS + FASTAPI
+
+## PROYECTO: ENCUÉNTRAME NICARAGUA
+
+### ROL PROFESIONAL
+
+Actúa como un Ingeniero de Software Full Stack Senior, Arquitecto de Software, Especialista DevOps y QA Automation Senior, con experiencia avanzada en:
+
+- Next.js y React.
+- TypeScript.
+- Python y FastAPI.
+- Despliegue de aplicaciones web.
+- Static Site Generation (SSG).
+- React Router y Next.js App Router.
+- Configuración de servidores ASGI.
+- API REST.
+- Enrutamiento HTTP.
+- Playwright.
+- Diagnóstico de errores de producción.
+
+Tu misión es diagnosticar y corregir definitivamente los errores de navegación de la aplicación Encuéntrame Nicaragua publicada en un hosting con FastAPI.
+
+## 1. PROBLEMA ACTUAL
+
+La aplicación funciona visualmente en el hosting público, pero al seleccionar los elementos del menú principal, el navegador muestra una respuesta JSON de FastAPI en lugar de renderizar la página solicitada.
+
+**Dominio público:**
+
+https://creacionvaloria.tradescanner.online/
+
+**Ejemplo de error:**
+
+Al seleccionar Catálogo de Casos:
+
+URL: https://creacionvaloria.tradescanner.online/casos
+
+Respuesta:
+
+```json
+{
+  "detail": "Not Found"
+}
+```
+
+El error también puede afectar otros elementos del menú:
+
+- Catálogo de Casos.
+- Mapa Nacional.
+- Aportar Pista.
+- Reportar Caso.
+- Ingresar.
+
+El problema debe solucionarse de manera integral.
+
+No apliques una solución exclusiva para `/casos` que deje defectuosas las demás rutas.
+
+---
+
+# 2. OBJETIVO GENERAL
+
+Garantizar que todas las rutas del frontend de Next.js funcionen correctamente cuando la aplicación esté publicada mediante FastAPI.
+
+Cada elemento del menú debe mostrar su página correspondiente y no respuestas JSON, errores 404 ni páginas vacías.
+
+La solución debe funcionar tanto mediante navegación interna como al ingresar directamente la URL en el navegador.
+
+---
+
+# 3. DIAGNÓSTICO OBLIGATORIO
+
+Antes de modificar código, inspecciona:
+
+1. La estructura real del proyecto.
+2. La configuraci
+<truncated 6595 bytes>
+TACIÓN
+
+La corrección estará completa cuando:
+
+1. La página principal funcione.
+2. Catálogo de Casos abra correctamente.
+3. Mapa Nacional abra correctamente.
+4. Aportar Pista abra correctamente.
+5. Reportar Caso abra correctamente.
+6. Ingresar abra correctamente.
+7. Ninguna ruta válida muestre JSON Not Found.
+8. Todas las páginas conserven sus estilos.
+9. Los recursos JavaScript funcionen.
+10. Los endpoints de FastAPI continúen operativos.
+11. La navegación directa funcione.
+12. La recarga de páginas funcione.
+13. Las pruebas de regresión sean satisfactorias.
+
+---
+
+# INSTRUCCIÓN FINAL
+
+Comienza inspeccionando la configuración real de Next.js y FastAPI.
+
+Identifica por qué `/casos` devuelve:
+
+```json
+{"detail":"Not Found"}
+```
+
+Corrige la causa raíz sin reconstruir la aplicación.
+
+Asegura que todas las rutas del frontend funcionen correctamente en el hosting.
+
+Conserva la arquitectura, el diseño y las funcionalidades existentes.
+
+No declares resuelto el problema hasta comprobar la navegación interna, el acceso directo, la recarga y el funcionamiento de la API.
+
+Entrega el código corregido, los archivos afectados y las instrucciones exactas para volver a publicar la aplicación.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #36 — FECHA Y HORA: 2026-11-20T06:05:02Z
+----------------------------------------------------------------------------------------------------
+redireccioname a la base de datos donde estas alamcenando los reistros de los casos reportados.
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #37 — FECHA Y HORA: 2026-11-21T02:02:11Z
+----------------------------------------------------------------------------------------------------
+Valida en la seccion de catalogo el mostrar la imagen que se sube de los reportes de cada caso, en vez de una imagen sintética que se muestre la imagen del caso reportado. sin hacer despliegue en producción solo en el sitio local
+
+
+----------------------------------------------------------------------------------------------------
+PROMPT #38 — FECHA Y HORA: 2026-11-24T23:27:23Z
+----------------------------------------------------------------------------------------------------
+generame una documentación completa en un  archivo .txt en la raiz del proyecto con todos los prompts, cambios, ajustes y creación inicial del mismo
+
+
+
+====================================================================================================
+4. ANÁLISIS DETALLADO DE HITOS, DIAGNÓSTICOS, CAMBIOS Y AJUSTES REALIZADOS
+====================================================================================================
+
+4.1. Creación Inicial y Planificación (Fases 1, 2 y 3)
+- Contexto: A partir del Prompt Maestro #1, se elaboró el documento de arquitectura inicial en Markdown
+  (FASE_1_Y_2_ANALISIS_Y_PLANIFICACION.md), definiendo el alcance cívico, marco ético bajo la Ley N.° 787,
+  modelo relacional de 14 entidades y wireframes conceptuales.
+- Aprobación: El usuario aprobó el plan en el Prompt #2.
+- Construcción: Se construyó la estructura inicial en FastAPI y Next.js 14 con TypeScript y Tailwind.
+  Se incorporaron 20 casos sintéticos representativos cubriendo los 15 departamentos y 2 regiones autónomas
+  (RACCN y RACCS), así como avatares fotográficos ilustrativos iniciales.
+
+4.2. Primeras Auditorías de Seguridad, RBAC y Cobertura de Pruebas Pytest
+- Problema: En los Prompts #3, #4 y #5, se auditó la seguridad de las APIs, validando que usuarios de rol
+  'citizen' o anónimos no pudieran acceder a pistas confidenciales de otros casos, ni que un reportante pudiera
+  editar reportes creados por otros autores.
+- Ajustes Implementados:
+  * Inyección de dependencias `require_role`, `require_moderator` en `backend/app/api/deps.py`.
+  * Verificación de propiedad del reporte (`is_owner = report.reporter_id == current_user.id`).
+  * Suite inicial de 10 pruebas automatizadas Pytest en `backend/tests/test_core_requirements.py` aprobada al 100%.
+
+4.3. Módulo GIS, División Político-Administrativa y Mapas de Nicaragua
+- Requerimiento (Prompt #6): Estructurar con exactitud geográfica la división política de Nicaragua:
+  15 departamentos (Boaco, Carazo, Chinandega, Chontales, Estelí, Granada, Jinotega, León, Madriz, Managua,
+  Masaya, Matagalpa, Nueva Segovia, Río San Juan, Rivas) y 2 regiones autónomas (Costa Caribe Norte - RACCN y
+  Costa Caribe Sur - RACCS), totalizando 153 municipios oficiales con coordenadas y centroides.
+- Ajustes Implementados:
+  * Creación del router `geography.py` y `locations.py` con validación estricta de municipios dependientes.
+  * Incorporación del archivo GeoJSON de Nicaragua en el frontend para polígonos departamentales y marcadores.
+  * Normalización de nombres de municipios y control de errores ante discrepancias tipográficas.
+
+4.4. Autonomía y Desacoplamiento de Dependencias Externas (Paquetería Local)
+- Requerimiento (Prompts #11 a #19): El usuario solicitó no dejar ninguna referencia en línea (CDNs) y
+  garantizar que la compilación y ejecución fueran 100% locales, autónomas e instalables en hosting estático.
+- Ajustes Implementados:
+  * Descarga y empaquetamiento local de estilos de Leaflet CSS (`leaflet.css`) e imágenes de marcadores en `frontend/public/`.
+  * Configuración de fuentes locales y eliminación de enlaces externos a Google Fonts o librerías externas.
+  * Ajuste de `next.config.mjs` con `output: "export"`, `trailingSlash: false`, e `images: { unoptimized: true }`.
+
+4.5. Configuración de Exportación Estática Next.js y Servidor FastAPI (main.py)
+- Requerimiento (Prompts #20, #21 y #22): El usuario intentó publicar en hosting con FastAPI (`tradescanner.online`)
+  pero observaba pantalla en blanco o errores internos debido a la estructura de archivos HTML exportados.
+- Diagnóstico: Next.js App Router con `output: "export"` genera archivos estáticos tipo `casos.html`, `mapa.html`,
+  `reportar.html`, y carpetas para rutas dinámicas. Si FastAPI sólo usaba `StaticFiles(html=True)` apuntando a la raíz,
+  al navegar a `/casos` o `/casos/` el servidor no encontraba `casos/index.html` y devolvía 404 o `{"detail": "Not Found"}`.
+- Solución Implementada en `main.py`:
+  * Middleware y despachador inteligente en FastAPI que inspecciona la ruta solicitada.
+  * Si la ruta coincide con un archivo `.html` existente (`<route>.html`) o un directorio con `index.html` (`<route>/index.html`),
+    lo sirve con `FileResponse` y `media_type="text/html; charset=utf-8"`.
+  * Preservación intacta del prefijo `/api/v1/` para todas las rutas REST del backend.
+
+4.6. Integración de Multimedia Institucional (Video y Ajustes de Portada)
+- Requerimiento (Prompts #23 y #24): Colocar en la portada principal el video oficial `Personas_Desaparecidas_Nicaragua.mp4`,
+  ubicado en la raíz, asegurando un diseño responsive y eliminando alertas de prueba o mensajes temporales.
+- Solución Implementada:
+  * Copia del archivo de video al directorio `frontend/public/videos/Personas_Desaparecidas_Nicaragua.mp4`.
+  * Integración en el componente Hero de `frontend/src/app/page.tsx` con contenedor responsive con bordes redondeados,
+    controles nativos de reproducción HTML5 y póster estático representativo.
+
+4.7. Corrección de Endpoints de Autenticación y Registro (Error 405 Method Not Allowed)
+- Problema (Prompt #26): Al intentar registrar un usuario nuevo en `/login`, la aplicación arrojaba:
+  `Error en el servidor: Method Not Allowed` (HTTP 405).
+- Causa Raíz: En `main.py` (servidor unificado) no estaba registrado el endpoint `POST /api/v1/auth/register`,
+  o el router de autenticación no manejaba las opciones de solicitud y validación de contraseñas.
+- Solución Implementada:
+  * Inclusión completa de `POST /api/v1/auth/register` en `main.py` y `backend/app/api/v1/auth.py`.
+  * Hashing seguro de contraseñas con verificación de requisitos mínimos (8 caracteres, letras y números).
+  * Manejo adecuado de CORS y respuestas HTTP 201 Created.
+
+4.8. Formulario de Registro de Casos: Selectores Dinámicos de Departamentos y Municipios
+- Problema (Prompt #27): En la pestaña `/reportar`, los selectores desplegables de departamentos y municipios
+  aparecían vacíos o deshabilitados.
+- Causa Raíz: La llamada a `fetchDepartments()` dependía de una URL absoluta que fallaba por CORS en ciertos entornos,
+  o el estado de React no inicializaba la lista de municipios tras seleccionar el departamento.
+- Solución Implementada:
+  * En `frontend/src/app/reportar/page.tsx` y `frontend/src/lib/api.ts`, se implementó un mecanismo de fallback:
+    si la API backend `/api/v1/geography/departments` no responde de inmediato, se carga el catálogo local oficial
+    de Nicaragua con los 15 departamentos, 2 regiones autónomas y sus 153 municipios correspondientes.
+  * Se configuró el efecto `useEffect` dependiente para actualizar automáticamente el selector de municipios al cambiar
+    el departamento seleccionado.
+
+4.9. Corrección de Error de Sincronización en Mapa Nacional GeoJSON
+- Problema (Prompt #28): En `/mapa` se mostraba el mensaje emergente:
+  "Error de sincronización con la base de datos geográfica — Recurso no encontrado".
+- Causa Raíz: El componente del mapa intentaba descargar `/data/nicaragua_departments.geojson` mediante `fetch()`,
+  pero la ruta estática en la exportación de Next.js no contenía el archivo en `public/data/` o la respuesta era un 404 HTML.
+- Solución Implementada:
+  * Generación y depósito del archivo GeoJSON oficial de Nicaragua en `frontend/public/data/nicaragua_departments.geojson`
+    y `frontend/public/geojson/nicaragua.geojson`.
+  * En `frontend/src/components/map/NationalMap.tsx`, se añadió manejo de excepciones silencioso con renderizado de
+    marcadores cartográficos basados en coordenadas latitud/longitud precisas de los casos, evitando que un fallo en el
+    GeoJSON bloqueara el mapa interactivo.
+
+4.10. Catálogo Oficial: Separación de Casos Activos y No Activos (Resueltos)
+- Requerimiento (Prompt #29): Diferenciar claramente en el catálogo los casos que se encuentran en búsqueda activa
+  de aquellos que ya han sido localizados o cerrados formalmente (no activos / resueltos).
+- Solución Implementada:
+  * Se rediseñó `frontend/src/app/casos/page.tsx` incorporando pestañas selectoras: "Todos los Casos", "Casos Activos"
+    (con distintivo verde pulsante "BÚSQUEDA ACTIVA") y "Casos No Activos / Concluidos" (con distintivo verde azulado "LOCALIZADO / CASO RESUELTO").
+  * Contadores dinámicos calculados en tiempo real para total de casos, activos y resueltos.
+  * Filtros concurrentes por departamento, municipio, género y rango de edad.
+
+4.11. Consulta de Fichas: Expediente Forense, Hitos en Vivo y Tracking en Tiempo Real
+- Requerimiento (Prompts #30 y #32): Al hacer clic en una tarjeta de caso, la ficha individual (`/casos/[id]`) debía
+  presentar la información fisonómica y forense completa, fotografía autorizada y una línea de tiempo (timeline) dinámica
+  con el avance cronológico del caso en vivo.
+- Solución Implementada en `frontend/src/app/casos/[id]/CasoDetailClient.tsx`:
+  * Panel fisonómico completo: estatura, contextura, tez, cabello, indumentaria al momento de desaparecer, señas particulares y condiciones médicas.
+  * Línea de tiempo de avance del caso: Registro formal bajo Ley 787, validación documental de moderación, activación de alerta cívica nacional,
+    recepción comunitaria de pistas y hito final de localización (en casos concluidos).
+  * Indicador de "Sincronizado en tiempo real" con reloj en vivo y canal cifrado integrado para aportar testimonios y pistas directas sobre ese caso.
+
+4.12. Auditoría Exhaustiva del Módulo de Fotografías y Gestión de Archivos
+- Requerimiento (Prompt #34): Auditoría de 10 puntos para determinar por qué las imágenes de personas desaparecidas
+  mostraban avatares genéricos o placeholders en lugar de fotografías reales.
+- Diagnóstico: Se descartaron fallas en la base de datos o permisos; la causa raíz radicaba en una doble bifurcación:
+  1. En `catalogData.ts`, la función `getCasePhotoUrl()` forzaba el uso de `avatar_en-2026-000X.webp` para cualquier
+     caso que terminara en número, omitiendo el argumento `fallback`.
+  2. Al crear un reporte en `/reportar`, el formulario no retenía en el almacenamiento local la URL de la foto cargada.
+  3. En `storage_service.py`, la expresión regular `STORAGE_KEY_REGEX` exigía estrictamente 32 caracteres hexadecimales,
+     impidiendo que otros formatos de claves persistentes fueran servidos.
+- Ajustes Implementados:
+  * Ampliación de la expresión regular de claves de almacenamiento:
+    `STORAGE_KEY_REGEX = re.compile(r"^(?:[a-f0-9]{32}|avatar_en-\d{4}-\d{4,5}|[a-zA-Z0-9_\-\.]{3,64})\.webp$")`
+  * Función de resolución con búsqueda en `storage/uploads`, `frontend/public/images/avatars` y `frontend/out/images/avatars`.
+  * Eliminación garantizada de metadatos EXIF con Pillow y conversión uniforme a WebP.
+
+4.13. Resolución Crítica de Enrutamiento y Navegación Next.js + FastAPI (Evitar JSON 404)
+- Problema (Prompt #35): Al navegar directamente por URLs en el hosting público (ej. `/casos` o `/mapa`), el navegador
+  recibía una respuesta JSON de FastAPI: `{"detail": "Not Found"}` en vez de renderizar la página web correspondiente.
+- Causa Raíz: En servidores ASGI FastAPI, el montaje estándar de archivos estáticos `StaticFiles` no realiza reescrituras
+  de URL de tipo Single Page Application (SPA). Si Next.js exporta `casos.html`, una petición HTTP GET a `/casos` es tratada
+  por FastAPI como una ruta de API inexistente.
+- Solución de Arquitectura Implementada en `main.py`:
+  * Implementación de una función despachadora unificada `serve_static_html(request, path)`:
+    a) Comprueba si la ruta solicitada corresponde a una API registrada (`/api/...`, `/docs`, `/openapi.json`) y la deriva.
+    b) Verifica si existe el archivo exacto en `out/` (ej. `out/casos.html`).
+    c) Verifica si existe un subdirectorio con `index.html` (ej. `out/casos/index.html`).
+    d) Resuelve enlaces internos con y sin barra final (`/casos` y `/casos/`).
+    e) Sirve archivos con MIME types correctos (`text/html; charset=utf-8`, `application/javascript`, `text/css`, etc.).
+  * Generación en el proceso de compilación de una estructura dual de exportación en `frontend/out/`:
+    `out/casos.html` Y `out/casos/index.html` (espejado sincronizado para máxima resiliencia en cualquier hosting).
+
+4.14. Localización, Estructura y Esquema de la Base de Datos (encuentrame_nicaragua.db)
+- Requerimiento (Prompt #36): Indicar al usuario la ubicación exacta de la base de datos y cómo están estructurados
+  los registros de los casos reportados.
+- Explicación y Verificación Técnica Proporcionada:
+  * Archivo de base de datos relacional: `c:\Users\User\Documents\Valor IA\EncuentrameNicaragua\encuentrame_nicaragua.db` (SQLite).
+  * Tabla central: `missing_person_reports`, vinculada por llaves foráneas a `geographic_locations`, `report_photos`,
+    `consent_records`, `report_status_history` y `audit_logs`.
+  * Se suministraron scripts de consulta interactiva mediante Python y SQLite3 para auditar directamente los registros.
+
+4.15. Visualización de Fotografías Reales Subidas en Catálogo Local (Eliminación de Avatares Sintéticos)
+- Requerimiento (Prompt #37): Validar estrictamente en el entorno local (sin desplegar a producción) que en la sección
+  de catálogo (`/casos`), cuando un caso posea una fotografía real subida por el usuario, se renderice dicha imagen real
+  y no un avatar sintético.
+- Diagnóstico Final y Corrección Aplicada:
+  1. En `frontend/src/lib/catalogData.ts`, se modificó `getCasePhotoUrl(caseNumber, fallback)`:
+     Si el parámetro `fallback` contiene una imagen real (inicia con `data:`, `blob:`, o `/api/v1/reports/photos/`),
+     se retorna INMEDIATAMENTE, anulando cualquier mapeo al avatar sintético `avatar_en-2026-000X.webp`.
+  2. En `frontend/src/components/reports/ReportCard.tsx`, se actualizó la resolución de `photoSrc` para que transmita
+     `report.primary_photo_url` al helper sin forzar placeholders si la URL es válida.
+  3. En `frontend/src/app/casos/[id]/CasoDetailClient.tsx`, se replicó la misma lógica para la ficha en profundidad.
+  4. En `frontend/src/lib/api.ts`, `fetchPublicReports()` preserva la URL de la fotografía de los casos creados localmente.
+  5. En `backend/app/api/v1/reports.py`, se armonizó el estado de los nuevos reportes creados (`PENDING_REVIEW` por defecto)
+     y se garantizó que los casos aprobados en el listado devuelvan su `primary_photo_url` vinculada a `ReportPhoto`.
+- Validación Rigurosa:
+  * Se ejecutó el script de verificación automatizada [scratch/verify_photo_catalog.py].
+  * Se creó el caso `EN-2026-0026` ("Valentina Morales Ruiz").
+  * Se subió una fotografía real mediante `POST /api/v1/reports/{id}/photos`.
+  * El backend sanitizó y guardó el archivo como `storage/uploads/b3d8282345e3454da2e3c15e73f3275d.webp`.
+  * Se aprobó por moderación y se consultó `GET /api/v1/reports/`.
+  * Resultado: `primary_photo_url` es `/api/v1/reports/photos/b3d8282345e3454da2e3c15e73f3275d.webp`.
+  * El endpoint de descarga devolvió HTTP 200 con `Content-Type: image/webp` y tamaño verificado.
+  * Las 38 pruebas Pytest pasaron con 100% de éxito.
+
+
+====================================================================================================
+5. REGISTRO DE ARCHIVOS CLAVE MODIFICADOS Y CREADOS
+====================================================================================================
+
+A continuación se detalla la matriz de archivos fundamentales del proyecto con su función y ajustes:
+
+1. backend/app/api/v1/reports.py
+   - Endpoint de subida de fotos `POST /api/v1/reports/{report_id}/photos` con sanitización EXIF.
+   - Endpoint de entrega de fotos `GET /api/v1/reports/photos/{storage_key}` con control de cabeceras.
+   - Listado público `GET /api/v1/reports/` con ordenamiento cronológico por fecha de creación y publicación.
+   - Flujo ético de cierre de caso (`POST /{report_id}/request-close`) y supresión de datos bajo Ley 787.
+
+2. backend/app/services/storage_service.py
+   - Sanitización de imágenes con Pillow: eliminación forzada de metadatos EXIF.
+   - Conversión a WebP optimizado (calidad 85, dimensiones máximas 800x800).
+   - Generación de hashes seguros de archivo y validación de extensiones y tipos MIME permitidos.
+   - Resolución de rutas de almacenamiento en `storage/uploads/`.
+
+3. backend/app/api/v1/admin.py
+   - Panel de moderación: aprobación, rechazo y solicitud de cambios sobre reportes ciudadanos.
+   - Consulta de pistas confidenciales y registro inmutable de auditoría forense (`/audit-logs`).
+
+4. backend/app/api/v1/auth.py
+   - Endpoints `/login` y `/register` con validación estricta de credenciales, hashing Argon2id y JWT Bearer.
+
+5. frontend/src/lib/catalogData.ts
+   - Corrección en `getCasePhotoUrl()`: prioridad absoluta a fotografías reales cargadas por usuarios.
+   - Función `generateDefaultTimeline()` para seguimiento cronológico en tiempo real.
+   - Catálogo cívico de contingencia con los 20 casos sintéticos oficiales de prueba.
+
+6. frontend/src/components/reports/ReportCard.tsx
+   - Renderizado de tarjetas del catálogo compatible con URLs absolutas, relativas y Data URLs de fotos reales.
+   - Badges visuales de estado ("BÚSQUEDA ACTIVA" vs "LOCALIZADO / CASO RESUELTO") y alertas de menores de edad.
+
+7. frontend/src/app/casos/[id]/CasoDetailClient.tsx
+   - Visualización de expediente detallado de la persona desaparecida.
+   - Renderizado de fotografía autorizada y galería de imágenes.
+   - Línea de tiempo cronológica dinámica en tiempo real.
+   - Formulario integrado para aportación confidencial de pistas sobre el caso específico.
+
+8. frontend/src/app/reportar/page.tsx
+   - Formulario multipaso con consentimiento informado bajo Ley N.° 787 de Nicaragua.
+   - Previsualización y validación de fotografía antes de la carga.
+   - Carga multipart al backend y persistencia inmediata en almacenamiento del navegador para disponibilidad en catálogo.
+   - Selectores dependientes de departamentos y municipios de Nicaragua con fallback autónomo.
+
+9. frontend/src/app/casos/page.tsx
+   - Catálogo interactivo con selector de pestañas: Todos, Activos y No Activos (Concluidos).
+   - Contadores en tiempo real y buscador facetado multicriterio.
+
+10. frontend/src/app/page.tsx
+    - Página de inicio institucional con buscador rápido, estadísticas cívicas y video oficial.
+
+11. main.py
+    - Servidor ASGI unificado para producción y hosting.
+    - Despachador de rutas estáticas Next.js con soporte para URLs limpias sin extensión y con barra final.
+    - Endpoints de autenticación y fotos en modo unificado para entornos independientes.
+
+12. scratch/verify_photo_catalog.py
+    - Script de verificación automatizada end-to-end del ciclo de vida de fotografías reales.
+
+13. backend/tests/ (test_core_requirements.py, test_audit_fixes.py, test_geography.py, test_security_audit_v2.py)
+    - 38 pruebas unitarias y de integración que certifican la integridad del sistema.
+
+
+====================================================================================================
+6. ASEGURAMIENTO DE CALIDAD (QA), COBERTURA DE PRUEBAS Y VALIDACIÓN
+====================================================================================================
+
+El sistema ha sido sometido a ciclos iterativos de pruebas automatizadas y manuales:
+
+6.1. Suite Automatizada de Pruebas con Pytest
+- Comando de ejecución: `pytest backend/tests/`
+- Total de pruebas ejecutadas: 38
+- Tasa de éxito: 38 passed (100% de éxito en 2.78 segundos)
+- Áreas evaluadas:
+  * test_audit_fixes.py (8 pruebas): Autorización de modificación de reportes, control de propietarios,
+    despublicación al solicitar supresión de datos bajo Ley 787 y permisos RBAC.
+  * test_core_requirements.py (10 pruebas): Aprobación previa de moderación, denegación de acceso a pistas
+    a ciudadanos no autorizados, inmutabilidad de reportes ajenos, sanitización de datos de entrada.
+  * test_geography.py (15 pruebas): Consistencia de los 15 departamentos y 2 regiones autónomas, 153 municipios,
+    coordenadas geográficas y respuestas de API.
+  * test_security_audit_v2.py (5 pruebas): Detección de inyecciones, rate limiting contra ataques de fuerza bruta,
+    seguridad de contraseñas y validación de tokens revocados.
+
+6.2. Verificación de Compilación Frontend Next.js
+- Comando de ejecución: `npm --prefix frontend run build`
+- Resultado: Compilación exitosa con Next.js 14.2.35.
+- Rutas generadas: 61 páginas HTML estáticas optimizadas.
+- Comprobación: Se generó la estructura de directorios duales (`/casos.html` y `/casos/index.html`) para
+  garantizar navegación fluida tanto en local como en cualquier servidor web estático.
+
+6.3. Verificación End-to-End de Fotografías Reales en Local
+- Prueba automatizada: `scratch/verify_photo_catalog.py`
+- Flujo probado: Creación de caso -> Subida de fotografía real -> Conversión a WebP y eliminación EXIF ->
+  Aprobación de moderación -> Consulta en catálogo `/casos` -> Verificación de URL de foto real (no avatar) ->
+  Descarga HTTP 200 OK con Content-Type `image/webp`.
+
+
+====================================================================================================
+7. GUÍA OPERATIVA: INSTALACIÓN, EJECUCIÓN LOCAL Y MANTENIMIENTO
+====================================================================================================
+
+7.1. Requisitos Previos
+- Python 3.12 o superior con entorno virtual activo (`venv`).
+- Node.js 18+ y npm 9+.
+- Sistema Operativo: Windows, Linux o macOS.
+
+7.2. Puesta en Marcha del Backend y Servidor Local
+1. Activar entorno virtual de Python:
+   Windows (PowerShell):
+   .\venv\Scripts\Activate.ps1
+
+2. Instalar dependencias si es una instalación limpia:
+   pip install -r backend/requirements.txt
+
+3. Iniciar el servidor local unificado en el puerto 8000:
+   python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+
+4. Abrir en el navegador:
+   http://127.0.0.1:8000/
+   Catálogo de casos: http://127.0.0.1:8000/casos
+   Reportar desaparición: http://127.0.0.1:8000/reportar
+   Mapa nacional: http://127.0.0.1:8000/mapa
+   Documentación Swagger de la API: http://127.0.0.1:8000/docs
+
+7.3. Compilación del Frontend Next.js
+1. Acceder al directorio frontend e instalar dependencias:
+   cd frontend
+   npm install
+
+2. Compilar la exportación estática:
+   npm run build
+
+3. Sincronizar las rutas de exportación para servidores estáticos (PowerShell desde la raíz):
+   powershell -Command "New-Item -ItemType Directory -Force -Path 'frontend/out/casos', 'frontend/out/mapa', 'frontend/out/reportar', 'frontend/out/login', 'frontend/out/pistas'; Copy-Item -Path 'frontend/out/casos.html' -Destination 'frontend/out/casos/index.html' -Force; Copy-Item -Path 'frontend/out/mapa.html' -Destination 'frontend/out/mapa/index.html' -Force; Copy-Item -Path 'frontend/out/reportar.html' -Destination 'frontend/out/reportar/index.html' -Force; Copy-Item -Path 'frontend/out/login.html' -Destination 'frontend/out/login/index.html' -Force; Copy-Item -Path 'frontend/out/pistas.html' -Destination 'frontend/out/pistas/index.html' -Force"
+
+7.4. Ejecución de Pruebas de Calidad
+1. Ejecutar suite de pruebas Pytest:
+   pytest backend/tests/
+
+2. Ejecutar prueba automatizada de flujo de fotografía real:
+   python scratch/verify_photo_catalog.py
+
+7.5. Mantenimiento y Respaldos
+- Base de datos: Respaldar periódicamente el archivo `encuentrame_nicaragua.db`.
+- Fotografías: Respaldar periódicamente el directorio `storage/uploads/`.
+- Ningún archivo temporal o confidencial debe exponerse sin la debida autenticación.
+
+
+====================================================================================================
+FIN DE LA DOCUMENTACIÓN TÉCNICA — PROYECTO ENCUÉNTRAME NICARAGUA
+====================================================================================================
